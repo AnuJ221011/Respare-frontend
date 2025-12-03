@@ -196,6 +196,9 @@ export default function OrderRow({ order }) {
       {/* Make Model */}
       <td className="py-5 px-4 text-sm whitespace-pre-line">{order.vehicleMake},<br />{order.vehicleModel}</td>
 
+      {/* Fuel Type */}
+      <td className="py-5 px-4 text-sm">{order.fuelType || "—"}</td>
+
       {/* Part Name */}
       <td className="py-5 px-4 text-sm">{order.parts?.map(p => p.name).join(", ")}</td>
 

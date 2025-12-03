@@ -176,6 +176,16 @@ export default function AdminOrderBidsPage() {
           <span className="font-medium">{order.quantity}</span>
         </div>
         <div className="text-gray-700 text-sm">
+          <span className="font-semibold">Vehicle:</span>{" "}
+          <span className="font-medium">
+            {order.vehicleMake} {order.vehicleModel} ({order.vehicleNumber})
+          </span>
+        </div>
+        <div className="text-gray-700 text-sm">
+          <span className="font-semibold">Fuel Type:</span>{" "}
+          <span className="font-medium">{order.fuelType || "Not specified"}</span>
+        </div>
+        <div className="text-gray-700 text-sm">
           <span className="font-semibold">Current Status:</span>{" "}
           <span className="font-medium">{order.status}</span>
         </div>
