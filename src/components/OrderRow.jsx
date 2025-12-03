@@ -200,7 +200,7 @@ export default function OrderRow({ order }) {
       <td className="py-5 px-4 text-sm">{order.parts?.map(p => p.name).join(", ")}</td>
 
       {/* Customer Name */}
-      <td className="py-5 px-4 text-sm">{order.customer?.name}</td>
+      <td className="py-5 px-4 text-sm">{order.customerName}</td>
 
       {/* Date + Overdue */}
       <td className="py-5 px-4 text-sm">
