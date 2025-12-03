@@ -67,7 +67,7 @@ export default function HomePage() {
             <a href="#testimonials" className="text-gray-600 text-xs px-2 py-1.5 rounded-md hover:text-accent hover:bg-emerald-50 transition duration-150 hidden sm:inline-block">
               Reviews
             </a>
-            <a href="/admin/login" className="text-gray-600 text-xs px-2 py-1.5 rounded-md hover:text-accent hover:bg-emerald-50 transition duration-150 hidden md:inline-block">
+            <a href="/admin/login" className="text-white text-xs px-2 py-1.5 rounded-md hover:text-accent bg-gradient-to-r from-emerald-600 to-emerald-500 transition duration-150 hidden md:inline-block">
               Get Started
             </a>
             <a href="https://wa.me/918777765887" className="bg-gradient-to-r from-emerald-600 to-emerald-500 text-white text-xs font-medium px-3 py-1.5 rounded-lg shadow-md hover:shadow-lg hover:from-emerald-700 hover:to-emerald-600 transition duration-150 ml-2">
