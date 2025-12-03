@@ -46,11 +46,11 @@ export default function HomePage() {
       <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-20 shadow-sm">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex justify-between items-center">
           <a href="/" className="flex items-center">
-            <div className="w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl overflow-hidden flex items-center justify-center bg-white/80 shadow-md">
                 <img
                 src="https://res.cloudinary.com/dlnyzjn5e/image/upload/v1764598124/favicon_lxhjtc.ico"
                 alt="ReSpare Logo"
-                className="w-full h-full object-cover"
+                className="w-11/12 h-11/12 object-contain"
                 />
             </div>
 
@@ -169,27 +169,39 @@ export default function HomePage() {
             <div className="relative max-w-3xl mx-auto">
               <div className="hidden md:block absolute left-1/2 transform -translate-x-1/2 h-full w-px bg-gradient-to-b from-emerald-200 via-emerald-300 to-emerald-200"></div>
 
-              <div className="space-y-8">
+              <div className="space-y-10">
                 {[
                   { num: 1, title: "Send Request", desc: "WhatsApp your car number and part photo for instant processing." },
                   { num: 2, title: "We Find Parts", desc: "We verify VIN and locate compatible parts from inspected inventory." },
                   { num: 3, title: "Review & Choose", desc: "See photos, condition notes, pricing, and warranty details." },
                   { num: 4, title: "Fast Delivery", desc: "Quick delivery with real-time tracking to your doorstep." },
                   { num: 5, title: "Easy Returns", desc: "Hassle-free replacement or refund if needed." }
-                ].map((step, idx) => (
-                  <div key={step.num} className={`flex flex-col md:flex-row md:justify-between items-start md:space-x-6 ${idx % 2 === 0 ? '' : 'md:flex-row-reverse md:space-x-reverse'}`}>
-                    <div className={`md:w-5/12 ${idx % 2 === 0 ? 'text-left md:text-right' : 'text-left'} order-2 md:order-${idx % 2 === 0 ? '1' : '3'}`}>
-                      <h3 className="text-sm font-bold text-gray-800 mb-1">{step.title}</h3>
-                      <p className="text-gray-600 text-xs leading-relaxed">{step.desc}</p>
-                    </div>
-                    <div className="md:w-1/12 flex justify-center py-1.5 md:py-0 order-1 md:order-2">
-                      <div className="w-7 h-7 flex items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 text-white font-bold text-xs shadow-lg">
-                        {step.num}
+                ].map((step, idx) => {
+                  const isEven = idx % 2 === 0;
+                  return (
+                    <div
+                      key={step.num}
+                      className="relative flex flex-col items-center text-center md:grid md:grid-cols-[1fr_auto_1fr] md:items-center md:gap-6"
+                    >
+                      <div
+                        className={`w-full max-w-sm md:max-w-none bg-white/90 border border-emerald-50 rounded-xl shadow-sm p-4 md:p-5 flex flex-col gap-1 ${
+                          isEven
+                            ? "md:col-start-1 md:text-right md:items-end"
+                            : "md:col-start-3 md:text-left md:items-start"
+                        }`}
+                      >
+                        <h3 className="text-base font-semibold text-gray-900">{step.title}</h3>
+                        <p className="text-sm text-gray-600 leading-relaxed">{step.desc}</p>
+                      </div>
+
+                      <div className="relative md:col-start-2 flex flex-col items-center justify-center my-4 md:my-0">
+                        <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 text-white font-bold text-sm shadow-xl ring-4 ring-white">
+                          {step.num}
+                        </div>
                       </div>
                     </div>
-                    <div className={`md:w-5/12 ${idx % 2 === 0 ? 'hidden md:block order-3' : 'hidden md:block order-1'}`}></div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
