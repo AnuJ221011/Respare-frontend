@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 
+const FUEL_TYPES = ["Diesel", "Petrol", "CNG", "Electric"];
+
 export default function AdminOptions({ onOrderCreated }) {
   const [openMenu, setOpenMenu] = useState(false);
   const [openAddUser, setOpenAddUser] = useState(false);
@@ -48,6 +50,7 @@ export default function AdminOptions({ onOrderCreated }) {
     vehicleNumber: "",
     vehicleMake: "",
     vehicleModel: "",
+    fuelType: "",
     parts: [{ name: "", qty: 1 }],
     quantity: 1,
     notes: "",
@@ -160,6 +163,7 @@ export default function AdminOptions({ onOrderCreated }) {
         vehicleNumber: "",
         vehicleMake: "",
         vehicleModel: "",
+        fuelType: "",
         parts: [{ name: "", qty: 1 }],
         quantity: 1,
         notes: "",
@@ -332,6 +336,9 @@ export default function AdminOptions({ onOrderCreated }) {
       formDataToSend.append("vehicleNumber", orderFormData.vehicleNumber);
       formDataToSend.append("vehicleMake", orderFormData.vehicleMake);
       formDataToSend.append("vehicleModel", orderFormData.vehicleModel);
+      if (orderFormData.fuelType) {
+        formDataToSend.append("fuelType", orderFormData.fuelType);
+      }
       formDataToSend.append("parts", JSON.stringify(orderFormData.parts));
       formDataToSend.append("quantity", orderFormData.quantity.toString());
       formDataToSend.append("notes", orderFormData.notes);
@@ -754,6 +761,25 @@ export default function AdminOptions({ onOrderCreated }) {
                       className="border p-2 rounded-xl text-sm"
                       placeholder="Vehicle Model"
                     />
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Fuel Type</label>
+                      <select
+                        name="fuelType"
+                        value={orderFormData.fuelType}
+                        onChange={handleOrderInputChange}
+                        className="border p-2 rounded-xl text-sm w-full"
+                      >
+                        <option value="">Select fuel type (optional)</option>
+                        {FUEL_TYPES.map((type) => (
+                          <option key={type} value={type}>
+                            {type}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Supports Diesel, Petrol, CNG, Electric
+                      </p>
+                    </div>
 
                     <div className="border rounded-xl p-3">
                       <label className="block font-medium mb-2 text-sm">Parts Required *</label>

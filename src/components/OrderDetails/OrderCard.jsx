@@ -4,11 +4,14 @@ import Card from "../ui/Card";
 import InfoRow from "../ui/InfoRow";
 import Button from "../ui/Button";
 
+const FUEL_TYPES = ["Diesel", "Petrol", "CNG", "Electric"];
+
 const mapOrderToEditable = (source) => ({
   vehicleNumber: source?.vehicleNumber || "",
   vehicleMake: source?.vehicleMake || "",
   vehicleModel: source?.vehicleModel || "",
   vehicleYear: source?.vehicleYear || "",
+  fuelType: source?.fuelType || "",
   partName: (source?.parts || []).map((part) => part.name).join(", ") || "",
   quantity: source?.quantity || 1,
   notes: source?.notes || "",
@@ -121,11 +124,15 @@ export default function OrderCard({ order, onOrderUpdated }) {
         vehicleMake: editData.vehicleMake,
         vehicleModel: editData.vehicleModel,
         vehicleYear: editData.vehicleYear,
+        fuelType: editData.fuelType || "",
         partName: editData.partName,
         quantity: Number(editData.quantity),
         notes: editData.notes,
         images: editData.images,
       };
+      if (!payload.fuelType) {
+        delete payload.fuelType;
+      }
       const res = await fetch(`${baseUrl}/api/orders/${order.id}`, {
         method: "PATCH",
         headers: {
@@ -281,6 +288,19 @@ export default function OrderCard({ order, onOrderUpdated }) {
                 value={editData.vehicleYear}
                 onChange={(e) => handleChange("vehicleYear", e.target.value)}
               />
+              <label className="text-sm font-medium">Fuel Type</label>
+              <select
+                className="w-full p-2 border rounded mb-4"
+                value={editData.fuelType}
+                onChange={(e) => handleChange("fuelType", e.target.value)}
+              >
+                <option value="">Select fuel type</option>
+                {FUEL_TYPES.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="text-sm font-medium">Part Name</label>
@@ -365,6 +385,7 @@ export default function OrderCard({ order, onOrderUpdated }) {
                 label="Make / Model / Year"
                 value={`${order.vehicleMake || ""}, ${order.vehicleModel || ""}, ${order.vehicleYear || ""}`.trim() || "N/A"}
               />
+              <InfoRow label="Fuel Type" value={order.fuelType || "Not specified"} />
               <InfoRow label="Remark" value={order.notes || "No Remark"} />
             </div>
             <div>

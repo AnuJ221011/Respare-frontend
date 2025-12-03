@@ -9,6 +9,7 @@ export default function OrderListTable({ orders = [] }) {
             <th className="py-4 px-4 font-semibold">Order ID</th>
             <th className="py-4 px-4 font-semibold">Vehicle Number</th>
             <th className="py-4 px-4 font-semibold">Make Model</th>
+            <th className="py-4 px-4 font-semibold">Fuel Type</th>
             <th className="py-4 px-4 font-semibold">Part Name</th>
             <th className="py-4 px-4 font-semibold">Customer Name</th>
             <th className="py-4 px-4 font-semibold">Date</th>
