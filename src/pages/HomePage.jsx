@@ -105,14 +105,18 @@ export default function HomePage() {
                 WhatsApp Request
               </a>
               <div className="group relative">
-                <button className="inline-flex items-center justify-center px-6 py-2.5 border border-gray-300 text-sm font-semibold rounded-lg bg-white hover:bg-gray-50 transition duration-150 w-full">
+                <a
+                  href="/respare-app.apk"
+                  download
+                  className="inline-flex items-center justify-center px-6 py-2.5 border border-gray-300 text-sm font-semibold rounded-lg bg-white hover:bg-gray-50 transition duration-150 w-full"
+                >
                   <span className="text-gray-700 group-hover:opacity-0 transition duration-150">
                     Download App
                   </span>
                   <span className="absolute inset-0 flex items-center justify-center text-xs text-orange-500 font-bold opacity-0 group-hover:opacity-100 transition duration-150">
-                    Coming Soon
+                    APK Ready
                   </span>
-                </button>
+                </a>
               </div>
             </div>
           </div>
