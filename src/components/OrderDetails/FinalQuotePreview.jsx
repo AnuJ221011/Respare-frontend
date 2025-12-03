@@ -21,6 +21,7 @@ export default function FinalQuotePreview({
   const [form, setForm] = useState({
     buyPrice: "",
     sellPrice: "",
+    partQuality: "",
     remarks: "",
   });
   const [saving, setSaving] = useState(false);
@@ -31,6 +32,7 @@ export default function FinalQuotePreview({
     setForm({
       buyPrice: quote?.buyPrice ?? "",
       sellPrice: quote?.sellPrice ?? "",
+      partQuality: quote?.partQuality ?? "",
       remarks: quote?.remarks ?? "",
     });
   }, [quote]);
@@ -40,6 +42,7 @@ export default function FinalQuotePreview({
     setForm({
       buyPrice: quote.buyPrice ?? "",
       sellPrice: quote.sellPrice ?? "",
+      partQuality: quote.partQuality ?? "",
       remarks: quote.remarks ?? "",
     });
     setEditMode(true);
@@ -53,6 +56,7 @@ export default function FinalQuotePreview({
       const payload = {
         buyPrice: parseFloat(form.buyPrice) || 0,
         sellPrice: parseFloat(form.sellPrice) || 0,
+        partQuality: form.partQuality || "",
         remarks: form.remarks || "",
       };
       const res = await fetch(`${baseUrl}/api/quotes/${quote.id}`, {
@@ -80,6 +84,7 @@ export default function FinalQuotePreview({
     setForm({
       buyPrice: quote?.buyPrice ?? "",
       sellPrice: quote?.sellPrice ?? "",
+      partQuality: quote?.partQuality ?? "",
       remarks: quote?.remarks ?? "",
     });
     setEditMode(false);
@@ -246,6 +251,28 @@ export default function FinalQuotePreview({
               />
             ) : (
               <div className="text-gray-800 font-medium text-sm">₹{quote.sellPrice}</div>
+            )}
+          </div>
+          <div>
+            <div className="text-xs text-gray-500">Part Quality</div>
+            {editMode ? (
+              <select
+                value={form.partQuality}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, partQuality: e.target.value }))
+                }
+                className="w-full border rounded p-1 text-sm"
+              >
+                <option value="">Select quality</option>
+                <option value="OEM">OEM</option>
+                <option value="OES">OES</option>
+                <option value="Aftermarket">Aftermarket</option>
+                <option value="Used">Used</option>
+              </select>
+            ) : (
+              <div className="text-gray-800 font-medium text-sm">
+                {quote.partQuality || "—"}
+              </div>
             )}
           </div>
         </div>
