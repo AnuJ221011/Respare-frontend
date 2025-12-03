@@ -46,11 +46,11 @@ export default function HomePage() {
       <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-20 shadow-sm">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex justify-between items-center">
           <a href="/" className="flex items-center">
-            <div className="w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl overflow-hidden flex items-center justify-center bg-white/80 shadow-md">
                 <img
                 src="https://res.cloudinary.com/dlnyzjn5e/image/upload/v1764598124/favicon_lxhjtc.ico"
                 alt="ReSpare Logo"
-                className="w-full h-full object-cover"
+                className="w-11/12 h-11/12 object-contain"
                 />
             </div>
 
