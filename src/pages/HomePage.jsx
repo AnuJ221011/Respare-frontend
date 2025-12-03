@@ -44,19 +44,19 @@ export default function HomePage() {
 
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-20 shadow-sm">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex justify-between items-center">
+        <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-2 flex justify-between items-center">
           <a href="/" className="flex items-center">
-            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl overflow-hidden flex items-center justify-center bg-white/80 shadow-md">
-                <img
-                src="https://res.cloudinary.com/dlnyzjn5e/image/upload/v1764598124/favicon_lxhjtc.ico"
+            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl overflow-hidden flex items-center justify-center bg-white/90 shadow-xl">
+              <img
+                src="https://res.cloudinary.com/dlnyzjn5e/image/upload/v1764753429/ChatGPT_Image_Nov_10_2025_08_57_35_PM_2_1_lldkzn.svg"
                 alt="ReSpare Logo"
-                className="w-11/12 h-11/12 object-contain"
-                />
+                className="w-full h-full object-contain"
+              />
             </div>
 
             {/* Remove this text if you no longer want it */}
             {/* <span className="ml-2 text-base font-bold text-gray-800">ReSpare</span> */}
-        </a>
+          </a>
           <nav className="flex items-center space-x-1 sm:space-x-2">
             <a href="#why-choose" className="text-gray-600 text-xs px-2 py-1.5 rounded-md hover:text-accent hover:bg-emerald-50 transition duration-150 hidden sm:inline-block">
               Why Us
