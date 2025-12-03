@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import Loader from "../components/ui/Loader";
+import Button from "../components/ui/Button";
 
 export default function AdminOrderBidsPage() {
   const { id: orderId } = useParams();
@@ -12,6 +13,8 @@ export default function AdminOrderBidsPage() {
   const [editForm, setEditForm] = useState({});
   const [cancelId, setCancelId] = useState(null);
   const [cancelRemarks, setCancelRemarks] = useState("");
+  const [savingQuoteId, setSavingQuoteId] = useState(null);
+  const [cancelLoadingId, setCancelLoadingId] = useState(null);
   const BASE_URL = import.meta.env.VITE_BACKEND_URL;
   const token = localStorage.getItem("token");
 
@@ -59,6 +62,7 @@ export default function AdminOrderBidsPage() {
   // PATCH: Save updates to a quote
   const handleEditSave = async (quoteId) => {
     try {
+      setSavingQuoteId(quoteId);
       const patchRes = await fetch(`${BASE_URL}/api/quotes/${quoteId}`, {
         method: "PATCH",
         headers: {
@@ -82,6 +86,8 @@ export default function AdminOrderBidsPage() {
       setOrder(await refRes.json());
     } catch (err) {
       toast.error(err.message || "Error updating quote");
+    } finally {
+      setSavingQuoteId(null);
     }
   };
 
@@ -89,6 +95,7 @@ export default function AdminOrderBidsPage() {
   const handleCancelQuote = async (quoteId) => {
     try {
       if (!cancelRemarks) throw new Error("Please enter cancellation remarks.");
+      setCancelLoadingId(quoteId);
       const res = await fetch(`${BASE_URL}/api/quotes/${quoteId}/admin/cancel`, {
         method: "DELETE",
         headers: {
@@ -112,6 +119,8 @@ export default function AdminOrderBidsPage() {
       setOrder(await refRes.json());
     } catch (err) {
       toast.error(err.message || "Error cancelling quote");
+    } finally {
+      setCancelLoadingId(null);
     }
   };
 
@@ -258,12 +267,16 @@ export default function AdminOrderBidsPage() {
                         className="border px-2 py-1 rounded w-28 text-xs"
                         placeholder="Remarks"
                       />
-                      <button
-                        className="bg-blue-600 text-white px-2 py-1 rounded text-xs"
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        className="px-2 py-1 text-xs"
                         onClick={() => handleEditSave(q.id)}
+                        isLoading={savingQuoteId === q.id}
+                        disableWhileLoading
                       >
                         Save
-                      </button>
+                      </Button>
                       <button
                         className="bg-gray-400 text-white px-2 py-1 rounded text-xs"
                         onClick={() => setEditId(null)}
@@ -284,12 +297,16 @@ export default function AdminOrderBidsPage() {
                         placeholder="Enter reason"
                       />
                       <div className="flex gap-1">
-                        <button
-                          className="bg-red-600 text-white px-2 py-1 rounded text-xs"
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          className="px-2 py-1 text-xs"
                           onClick={() => handleCancelQuote(q.id)}
+                          isLoading={cancelLoadingId === q.id}
+                          disableWhileLoading
                         >
                           Confirm Cancel
-                        </button>
+                        </Button>
                         <button
                           className="bg-gray-400 text-white px-2 py-1 rounded text-xs"
                           onClick={() => setCancelId(null)}

@@ -7,6 +7,9 @@ import { toast } from "react-toastify";
 export default function OrderRow({ order }) {
   const [status, setStatus] = useState(order.status);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [assigningQc, setAssigningQc] = useState(false);
+  const [markingDelivered, setMarkingDelivered] = useState(false);
+  const [cancelingOrder, setCancelingOrder] = useState(false);
   const baseUrl = import.meta.env.VITE_BACKEND_URL;
   const isCancelable = status === "PENDING" || status === "QUOTED";
 
@@ -55,12 +58,14 @@ export default function OrderRow({ order }) {
   };
 
   const markOutForDelivery = async () => {
+    if (assigningQc) return;
     const token = localStorage.getItem("token");
     if (!token) {
       toast.error("Please login to update order status.");
       return;
     }
     try {
+      setAssigningQc(true);
       // 1. Update order status
       const orderRes = await fetch(
         `${baseUrl}/api/orders/${order.id}`,
@@ -86,16 +91,20 @@ export default function OrderRow({ order }) {
       toast.success("QC is assigned and order is marked as confirmed.");
     } catch (error) {
       toast.error(`Error updating status: ${error.message}`);
+    } finally {
+      setAssigningQc(false);
     }
   };
 
   const markDelivered = async () => {
+    if (markingDelivered) return;
     const token = localStorage.getItem("token");
     if (!token) {
       toast.error("Please login to update order status.");
       return;
     }
     try {
+      setMarkingDelivered(true);
       // 1. Update order status
       const orderRes = await fetch(
         `${baseUrl}/api/orders/${order.id}`,
@@ -120,17 +129,21 @@ export default function OrderRow({ order }) {
       toast.success("Order is marked as delivered.");
     } catch (error) {
       toast.error(`Error updating status: ${error.message}`);
+    } finally {
+      setMarkingDelivered(false);
     }
   };
 
   // Handler to cancel order
   const handleCancelOrder = async () => {
+    if (cancelingOrder) return;
     const token = localStorage.getItem("token");
     if (!token) {
       toast.error("Please login to cancel the order.");
       return;
     }
     try {
+      setCancelingOrder(true);
       const res = await fetch(
         `${baseUrl}/api/orders/${order.id}/cancel-admin`,
         {
@@ -153,6 +166,8 @@ export default function OrderRow({ order }) {
       toast.success("Order cancelled successfully.");
     } catch (error) {
       toast.error(`Error cancelling order: ${error.message}`);
+    } finally {
+      setCancelingOrder(false);
     }
   };
 
@@ -209,11 +224,23 @@ export default function OrderRow({ order }) {
               </Button>
             </Link>
           ) : status === "QUOTE_ACCEPTED_BY_CUSTOMER" ? (
-            <Button variant="primary" size="sm" onClick={markOutForDelivery}>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={markOutForDelivery}
+              isLoading={assigningQc}
+              disableWhileLoading
+            >
               Assign QC
             </Button>
           ) : status === "CONFIRMED" ? (
-            <Button variant="primary" size="sm" onClick={markDelivered}>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={markDelivered}
+              isLoading={markingDelivered}
+              disableWhileLoading
+            >
               Mark Delivered
             </Button>
           ) : ( 
@@ -245,16 +272,17 @@ export default function OrderRow({ order }) {
 
         {showCancelConfirm && status !== "CANCELLED" && (
           <div className="absolute top-8 right-0 border border-gray-200 shadow-md rounded bg-white p-2 z-10 w-32 text-center">
-            <button
+            <Button
               type="button"
+              variant="danger"
+              size="sm"
               onClick={handleCancelOrder}
-              disabled={!isCancelable}
-              className={`font-semibold hover:underline 
-                ${isCancelable ? "text-red-600 cursor-pointer" : "text-gray-400 cursor-not-allowed hover:no-underline"}
-              `}
+              disabled={!isCancelable || cancelingOrder}
+              isLoading={cancelingOrder}
+              className="w-full text-xs"
             >
               Cancel Order
-            </button>
+            </Button>
 
 
             <Link to={`/admin/order/${order.id}/bids`} className="inline-block">

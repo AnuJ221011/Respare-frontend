@@ -2,17 +2,21 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import Button from "../components/ui/Button";
 
 
 export default function LoginPage({ setUserName }) {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     console.log("Base URL:", BASE_URL);
 
     const loginUrl = `${BASE_URL}/api/auth/login`;
@@ -55,6 +59,8 @@ export default function LoginPage({ setUserName }) {
       console.log("Log from catch block");
       setError("Network error. Please try again.");
       toast.error("Network error. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -87,12 +93,16 @@ export default function LoginPage({ setUserName }) {
                 required
               />
 
-              <button
+              <Button
                 type="submit"
-                className="w-full rounded-lg py-3 text-base bg-black text-white hover:bg-black/90 cursor-pointer"
+                variant="primary"
+                size="md"
+                className="w-full py-3 text-base bg-black hover:bg-black/90"
+                isLoading={isSubmitting}
+                disableWhileLoading
               >
                 Login →
-              </button>
+              </Button>
 
               {error && (
                 <p className="text-red-600 text-xs text-center mt-2">{error}</p>

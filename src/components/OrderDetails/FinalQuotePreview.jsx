@@ -15,6 +15,7 @@ export default function FinalQuotePreview({
   onOrderCompleted,
   onQuoteUpdated,
   onQuoteRefresh,
+  assigningQcLoading = false,
 }) {
   const [editMode, setEditMode] = useState(false);
   const [form, setForm] = useState({
@@ -24,6 +25,7 @@ export default function FinalQuotePreview({
   });
   const [saving, setSaving] = useState(false);
   const [completeMsg, setCompleteMsg] = useState("");
+  const [markingDelivered, setMarkingDelivered] = useState(false);
 
   useEffect(() => {
     setForm({
@@ -84,8 +86,10 @@ export default function FinalQuotePreview({
   };
 
   const handleMarkDelivered = async () => {
+    if (markingDelivered) return;
     if (!order?.id) return toast.error("Order ID missing");
     try {
+      setMarkingDelivered(true);
       const token = localStorage.getItem("token");
       const res = await fetch(`${baseUrl}/api/orders/${order.id}/complete`, {
         method: "PATCH",
@@ -99,6 +103,8 @@ export default function FinalQuotePreview({
       if (typeof onQuoteRefresh === "function") await onQuoteRefresh();
     } catch (err) {
       toast.error(err.message || "Failed to mark delivered");
+    } finally {
+      setMarkingDelivered(false);
     }
   };
 
@@ -130,13 +136,27 @@ export default function FinalQuotePreview({
   let actionSection = null;
   if (order.status === "QUOTE_ACCEPTED_BY_CUSTOMER" && !editMode) {
     actionSection = (
-      <Button variant="primary" size="md" className="px-6" onClick={onAssignQC}>
+      <Button
+        variant="primary"
+        size="md"
+        className="px-6"
+        onClick={onAssignQC}
+        isLoading={assigningQcLoading}
+        disableWhileLoading
+      >
         Assign QC
       </Button>
     );
   } else if (order.status === "CONFIRMED" && !editMode) {
     actionSection = (
-      <Button variant="primary" size="md" className="px-6" onClick={handleMarkDelivered}>
+      <Button
+        variant="primary"
+        size="md"
+        className="px-6"
+        onClick={handleMarkDelivered}
+        isLoading={markingDelivered}
+        disableWhileLoading
+      >
         Mark Delivered
       </Button>
     );
@@ -172,9 +192,10 @@ export default function FinalQuotePreview({
                 variant="primary"
                 size="sm"
                 onClick={handleSaveClick}
-                disabled={saving}
+                isLoading={saving}
+                disableWhileLoading
               >
-                {saving ? "Saving..." : "Save"}
+                Save
               </Button>
             </div>
           )}

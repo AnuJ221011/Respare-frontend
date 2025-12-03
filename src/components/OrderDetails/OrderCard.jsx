@@ -20,6 +20,7 @@ export default function OrderCard({ order, onOrderUpdated }) {
   const [isEditing, setIsEditing] = useState(false);
   const [status, setStatus] = useState(order.status || "N/A");
   const [cancelling, setCancelling] = useState(false);
+  const [saving, setSaving] = useState(false);
   const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
   // Local editable copy
@@ -107,12 +108,14 @@ export default function OrderCard({ order, onOrderUpdated }) {
   };
 
   const handleSave = async () => {
+    if (saving) return;
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("You must be logged in to save changes.");
+      return;
+    }
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        toast.error("You must be logged in to save changes.");
-        return;
-      }
+      setSaving(true);
       const payload = {
         vehicleNumber: editData.vehicleNumber,
         vehicleMake: editData.vehicleMake,
@@ -144,6 +147,8 @@ export default function OrderCard({ order, onOrderUpdated }) {
       toast.success("Order updated successfully.");
     } catch (error) {
       toast.error(`Error updating order: ${error.message}`);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -340,7 +345,12 @@ export default function OrderCard({ order, onOrderUpdated }) {
                 <Button variant="secondary" onClick={handleCancel}>
                   Cancel
                 </Button>
-                <Button variant="primary" onClick={handleSave}>
+                <Button
+                  variant="primary"
+                  onClick={handleSave}
+                  isLoading={saving}
+                  disableWhileLoading
+                >
                   Save Changes
                 </Button>
               </div>
@@ -385,9 +395,11 @@ export default function OrderCard({ order, onOrderUpdated }) {
                 size="md"
                 className="mr-4"
                 onClick={handleCancelRequest}
-                disabled={cancelling || status === "Cancelled"}
+                disabled={status === "Cancelled"}
+                isLoading={cancelling}
+                disableWhileLoading
               >
-                {status === "Cancelled" ? "Cancelled" : cancelling ? "Cancelling..." : "Cancel Request"}
+                {status === "Cancelled" ? "Cancelled" : "Cancel Request"}
               </Button>
             </div>
           </div>

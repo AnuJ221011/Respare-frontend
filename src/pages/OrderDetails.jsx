@@ -31,6 +31,7 @@ export default function OrderDetails() {
   const [errorOrder, setErrorOrder] = useState(null);
   const [errorBids, setErrorBids] = useState(null);
   const [quoteError, setQuoteError] = useState(null);
+  const [assigningQc, setAssigningQc] = useState(false);
 
   const shouldShowBidList = useMemo(
     () => (order ? BID_ELIGIBLE_STATUSES.has(order.status) : false),
@@ -201,7 +202,9 @@ export default function OrderDetails() {
   }, [fetchAcceptedQuote]);
 
   const handleAssignQC = async () => {
+    if (assigningQc) return;
     try {
+      setAssigningQc(true);
       const token = localStorage.getItem("token");
       const acceptedQuoteId =
         quote?.id ||
@@ -229,6 +232,8 @@ export default function OrderDetails() {
       await fetchAcceptedQuote();
     } catch (err) {
       toast.error(err.message || "QC assignment failed.");
+    } finally {
+      setAssigningQc(false);
     }
   };
 
@@ -392,6 +397,7 @@ export default function OrderDetails() {
             onOrderCompleted={fetchOrder}
             onQuoteUpdated={setQuote}
             onQuoteRefresh={fetchAcceptedQuote}
+            assigningQcLoading={assigningQc}
           />
         )}
       </div>
