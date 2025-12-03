@@ -47,7 +47,7 @@ export default function LoginPage({ setUserName }) {
         }
         // Show success toast, then navigate after toast closes so user sees feedback
         toast.success("Login successful!", {
-          autoClose: 1500,
+          autoClose: 500,
           onClose: () => navigate("/orderList"),
         });
       } else {
