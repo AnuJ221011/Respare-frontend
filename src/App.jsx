@@ -29,7 +29,7 @@ function AppContent() {
 
       <ToastContainer position="top-center" autoClose={3000} pauseOnHover />
 
-      <div className="p-6">
+      <div className={hideNavbar ? "" : "p-6"}>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/admin/login" element={<LoginForm setUserName={setUserName} />} />

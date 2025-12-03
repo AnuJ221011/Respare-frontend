@@ -19,10 +19,18 @@ export default function NavBar({ userName, setUserName }) {
     navigate("/admin/login");
   };
 
+  const handleNavigateHome = () => {
+    navigate("/");
+  };
+
   return (
     <header className="w-full border-b border-gray-200">
       <div className="max-w-screen-2xl mx-auto px-6 py-4 flex items-center justify-between">
-        <div className="flex flex-col">
+        <button
+          type="button"
+          onClick={handleNavigateHome}
+          className="flex flex-col text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-md"
+        >
           <h1 className="text-[22px] font-semibold text-gray-800 leading-none">
             ReSpare Admin
           </h1>
@@ -30,7 +38,7 @@ export default function NavBar({ userName, setUserName }) {
           {isLoggedIn && (
             <p className="text-sm text-blue-500 mt-0.5">{userName}</p>
           )}
-        </div>
+        </button>
 
         {isLoggedIn && (
           <button
