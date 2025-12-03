@@ -68,8 +68,11 @@ export default function HomePage() {
             </a>
 
             <div className="group relative">
-                <button className="inline-flex items-center justify-center px-2 py-1.5 sm:px-3 sm:py-2 border border-gray-300 text-xs rounded-md bg-white hover:bg-gray-50 transition duration-150">
-                  <svg className="w-4 h-4 sm:mr-1.5 group-hover:opacity-0 transition duration-150" viewBox="0 0 24 24" fill="none">
+                <a
+                  href="/app-release.apk"
+                  download 
+                  className="inline-flex items-center justify-center px-2 py-1.5 sm:px-3 sm:py-2 border border-gray-300 text-xs rounded-md bg-white hover:bg-gray-50 transition duration-150">
+                  <svg className="w-4 h-4 sm:mr-1.5" viewBox="0 0 24 24" fill="none">
                     <rect x="7" y="2" width="10" height="20" rx="2" fill="url(#mobileGrad1)"/>
                     <rect x="7" y="2" width="10" height="20" rx="2" stroke="url(#mobileGrad2)" strokeWidth="0.5"/>
                     <circle cx="12" cy="19" r="1" fill="white"/>
@@ -85,13 +88,10 @@ export default function HomePage() {
                       </linearGradient>
                     </defs>
                   </svg>
-                  <span className="text-gray-700 group-hover:opacity-0 transition duration-150 hidden sm:inline">
+                  <span className="text-gray-700">
                     Download App
                   </span>
-                  <span className="absolute inset-0 flex items-center justify-center text-xs text-orange-500 font-bold opacity-0 group-hover:opacity-100 transition duration-150">
-                    Coming Soon
-                  </span>
-                </button>
+                </a>
             </div>
 
             <a
@@ -133,8 +133,11 @@ export default function HomePage() {
                 WhatsApp Request
               </a>
               <div className="group relative">
-                <button className="inline-flex items-center justify-center px-6 py-2.5 border border-gray-300 text-sm font-semibold rounded-lg bg-white hover:bg-gray-50 transition duration-150 w-full">
-                  <svg className="w-5 h-5 mr-2 group-hover:opacity-0 transition duration-150" viewBox="0 0 24 24" fill="none">
+                <a 
+                href="/app-release.apk"
+                download
+                className="inline-flex items-center justify-center px-6 py-2.5 border border-gray-300 text-sm font-semibold rounded-lg bg-white hover:bg-gray-50 transition duration-150 w-full">
+                  <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="none">
                     <rect x="7" y="2" width="10" height="20" rx="2" fill="url(#mobileGrad1)"/>
                     <rect x="7" y="2" width="10" height="20" rx="2" stroke="url(#mobileGrad2)" strokeWidth="0.5"/>
                     <circle cx="12" cy="19" r="1" fill="white"/>
@@ -150,13 +153,10 @@ export default function HomePage() {
                       </linearGradient>
                     </defs>
                   </svg>
-                  <span className="text-gray-700 group-hover:opacity-0 transition duration-150">
+                  <span className="text-gray-700">
                     Download App
                   </span>
-                  <span className="absolute inset-0 flex items-center justify-center text-xs text-orange-500 font-bold opacity-0 group-hover:opacity-100 transition duration-150">
-                    Coming Soon
-                  </span>
-                </button>
+                </a>
               </div>
             </div>
           </div>
@@ -212,9 +212,6 @@ export default function HomePage() {
             </h2>
 
             <div className="relative max-w-3xl mx-auto">
-
-              {/* Vertical line */}
-              <div className="hidden md:block absolute left-1/2 transform -translate-x-1/2 h-full w-px bg-gradient-to-b from-emerald-200 via-emerald-300 to-emerald-200"></div>
 
               <div className="space-y-8">
                 {[
