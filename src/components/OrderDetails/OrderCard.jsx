@@ -40,76 +40,6 @@ export default function OrderCard({ order, onOrderUpdated }) {
     setEditData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Only working with part images (order.images)
-  const handleUploadImages = async (e) => {
-    const files = Array.from(e.target.files);
-    if (files.length === 0) return;
-    const token = localStorage.getItem("token");
-    if (!token) {
-      toast.error("Please login to upload images.");
-      return;
-    }
-    // Only allow 'orders' as the folder for backend convention
-    const type = "orders";
-    try {
-      const formData = new FormData();
-      files.forEach((file) => {
-        formData.append("images", file);
-      });
-      formData.append("folder", type);
-      const res = await fetch(`${baseUrl}/api/images/upload`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
-      if (!res.ok) {
-        const err = await res.text();
-        throw new Error(err || "Failed to upload images");
-      }
-      const data = await res.json();
-      const newKeys = data.images.map((img) => img.key);
-      setEditData((prev) => ({
-        ...prev,
-        images: [...prev.images, ...newKeys],
-      }));
-      toast.success("Images uploaded successfully.");
-      e.target.value = null;
-    } catch (error) {
-      toast.error(error.message);
-    }
-  };
-
-  const handleDeleteImage = async (key) => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      toast.error("Please login to delete images.");
-      return;
-    }
-    try {
-      const res = await fetch(`${baseUrl}/api/images/delete`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ key }),
-      });
-      if (!res.ok) {
-        const err = await res.text();
-        throw new Error(err || "Failed to delete image");
-      }
-      setEditData((prev) => ({
-        ...prev,
-        images: prev.images.filter((k) => k !== key),
-      }));
-      toast.success("Image deleted.");
-    } catch (error) {
-      toast.error(error.message);
-    }
-  };
-
   const handleSave = async () => {
     if (saving) return;
     const token = localStorage.getItem("token");
@@ -325,40 +255,24 @@ export default function OrderCard({ order, onOrderUpdated }) {
               />
             </div>
             <div className="col-span-2">
-              {/* Part Images only */}
+              {/* Part images are locked to original submission */}
               <label className="text-sm font-medium">Part Images</label>
-              <div className="flex gap-3 mt-2 mb-4">
-                {editData.images.map((src, idx) => (
-                  <div key={idx} className="relative group w-20 h-20">
+              <p className="text-xs text-gray-500 mt-1 mb-2">
+                Images remain exactly as the customer uploaded them.
+              </p>
+              <div className="flex flex-wrap gap-3 mt-1 mb-4">
+                {editData.images.length > 0 ? (
+                  editData.images.map((src, idx) => (
                     <img
+                      key={idx}
                       src={src}
                       className="w-20 h-20 border rounded object-cover"
                       alt={`part-${idx}`}
                     />
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteImage(src)}
-                      className="absolute top-0 right-0 bg-red-600 rounded-full w-5 h-5 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition"
-                      aria-label="Delete part image"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handleUploadImages}
-                  className="hidden"
-                  id="uploadPartImages"
-                />
-                <label
-                  htmlFor="uploadPartImages"
-                  className="cursor-pointer flex items-center px-3 py-2 border border-gray-300 rounded text-sm text-gray-600 hover:bg-gray-100"
-                >
-                  + Upload
-                </label>
+                  ))
+                ) : (
+                  <span className="text-xs text-gray-400">No part images</span>
+                )}
               </div>
               {/* Save / Cancel Buttons */}
               <div className="col-span-2 flex justify-end mt-4 gap-3">
