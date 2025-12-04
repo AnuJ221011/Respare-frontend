@@ -18,10 +18,21 @@ export default function OrderList() {
       },
     });
     if (!response.ok) {
-      const errText = await response.text();
-      throw new Error(errText || "Failed to fetch orders");
+      let message = "Failed to fetch orders";
+      try {
+        const errBody = await response.json();
+        message = errBody?.message || message;
+      } catch {
+        const errText = await response.text();
+        if (errText) message = errText;
+      }
+      throw new Error(message);
     }
-    return response.json();
+    const payload = await response.json();
+    if (Array.isArray(payload)) {
+      return { orders: payload, total: payload.length };
+    }
+    return payload || { orders: [], total: 0 };
   }, [baseUrl]);
 
   useEffect(() => {
@@ -32,7 +43,7 @@ export default function OrderList() {
         setError(null);
         const data = await fetchOrders();
         if (!ignore) {
-          setOrders(data);
+          setOrders(Array.isArray(data) ? data : data?.orders || []);
         }
       } catch (err) {
         if (!ignore) {
