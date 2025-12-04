@@ -112,10 +112,10 @@ export default function HomePage() {
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
             <div className="inline-flex items-center bg-emerald-50 text-emerald-700 text-xs font-medium px-3 py-1 rounded-full mb-3 border border-emerald-200">
               <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-2 animate-pulse"></span>
-              India's Trusted Used Auto Parts
+              India's Trusted Auto Parts store
             </div>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-gray-900 mb-3">
-              Used Car Parts you can <span className="gradient-text">Trust</span>
+              Car Spare Parts you can <span className="gradient-text">Trust</span>
             </h1>
             <p className="text-base sm:text-lg font-semibold text-gray-600 mb-2 max-w-2xl mx-auto">
               Sahi Part. Sahi Price. Sahi Time.
@@ -166,8 +166,13 @@ export default function HomePage() {
         <section id="why-choose" className="py-10 sm:py-12 bg-white">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900 mb-8">
-              Why Choose <span className="gradient-text">ReSpare</span>
-            </h2>
+  Why Choose{" "}
+  <span>
+    <span className="text-green-600">Re</span>
+    <span className="text-gray-800">Spare</span>
+  </span>
+</h2>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="bg-gradient-to-br from-white to-emerald-50/30 p-5 rounded-xl border border-gray-200 card-hover">
                 <div className="text-2xl mb-2">🛠️</div>
@@ -318,7 +323,7 @@ export default function HomePage() {
               <span className="gradient-text">1000+</span> Brands Available
             </h2>
             <p className="text-sm text-center text-gray-500 mb-8 max-w-xl mx-auto">
-              Quality used parts from trusted manufacturers
+              Quality spare parts from trusted manufacturers
             </p>
 
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4 items-center justify-items-center">
