@@ -21,6 +21,7 @@ export default function BidItem({
   const [editForm, setEditForm] = useState({
     buyPrice: bid.buyPrice ?? "",
     sellPrice: bid.sellPrice ?? "",
+    partQuality: bid.partQuality ?? "",
     remarks: bid.remarks ?? "",
   });
 
@@ -30,6 +31,7 @@ export default function BidItem({
     setEditForm({
       buyPrice: bid.buyPrice ?? "",
       sellPrice: bid.sellPrice ?? "",
+      partQuality: bid.partQuality ?? "",
       remarks: bid.remarks ?? "",
     });
     setEditModalOpen(true);
@@ -160,6 +162,9 @@ export default function BidItem({
       </div>
 
       {/* Remarks */}
+      <div className="text-xs text-gray-600 text-center mb-1">
+        Part Quality: {bid.partQuality || "—"}
+      </div>
       <div className="text-xs text-gray-600 text-center mb-2">{bid.remarks || "—"}</div>
 
       {/* Bottom buttons */}
@@ -225,6 +230,7 @@ export default function BidItem({
               <div><strong>Phone:</strong> {bid.supplier?.phone || "—"}</div>
               <div><strong>City:</strong> {bid.supplier?.city || "—"}, {bid.supplier?.state || "—"}</div>
               <div><strong>Warranty:</strong> {bid.warranty || "—"}</div>
+              <div><strong>Part Quality:</strong> {bid.partQuality || "—"}</div>
               <div><strong>Remarks:</strong> {bid.remarks || "—"}</div>
               <div><strong>Admin Remarks:</strong> {bid.adminRemarks || "—"}</div>
               <div><strong>Rating:</strong> {bid.supplier?.rating ?? "—"}</div>
@@ -264,6 +270,22 @@ export default function BidItem({
                   value={editForm.sellPrice}
                   onChange={(e) => setEditForm((prev) => ({ ...prev, sellPrice: e.target.value }))}
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Part Quality</label>
+                <select
+                  className="w-full border px-3 py-2 rounded"
+                  value={editForm.partQuality}
+                  onChange={(e) =>
+                    setEditForm((prev) => ({ ...prev, partQuality: e.target.value }))
+                  }
+                >
+                  <option value="">Select quality</option>
+                  <option value="OEM">OEM</option>
+                  <option value="OES">OES</option>
+                  <option value="Aftermarket">Aftermarket</option>
+                  <option value="Used">Used</option>
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Remarks</label>

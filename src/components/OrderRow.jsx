@@ -29,6 +29,16 @@ export default function OrderRow({ order }) {
     }
   };
 
+  const extractTime = (utcString) => {
+  if (!utcString) return "";
+  return new Date(utcString).toLocaleTimeString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+
   const displayDate = useMemo(
     () =>
       extractDate(
@@ -36,6 +46,15 @@ export default function OrderRow({ order }) {
       ),
     [order.confirmedAt, order.createdAt, order.updatedAt, order.date]
   );
+
+  const displayTime = useMemo(
+  () =>
+    extractTime(
+      order.confirmedAt || order.createdAt || order.updatedAt || order.date
+    ),
+  [order.confirmedAt, order.createdAt, order.updatedAt, order.date]
+);
+
 
   // Display label mapping for user-friendly status
   const getDisplayStatus = (stat) => {
@@ -208,7 +227,8 @@ export default function OrderRow({ order }) {
       {/* Date + Overdue */}
       <td className="py-5 px-4 text-sm">
         <div className="flex flex-col">
-          <span>{displayDate || "—"}</span>
+          <div>{displayDate || "—"}</div>
+          <div>{displayTime || ""}</div>
           {order.overdue && (
             <span className="text-red-500 text-xs font-semibold">Overdue</span>
           )}

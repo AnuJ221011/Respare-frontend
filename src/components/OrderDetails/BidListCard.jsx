@@ -25,6 +25,7 @@ export default function BidListCard({
     supplierId: supplierId || "",
     buyPrice: "",
     sellPrice: "",
+    partQuality: "",
     remarks: "",
     adminRemarks: "",
     deliveryEta: "",
@@ -101,6 +102,7 @@ export default function BidListCard({
       }
       if (newBid.remarks) formData.append("remarks", newBid.remarks);
       if (newBid.adminRemarks) formData.append("adminRemarks", newBid.adminRemarks);
+      if (newBid.partQuality) formData.append("partQuality", newBid.partQuality);
       if (newBid.deliveryEta) formData.append("deliveryEta", newBid.deliveryEta);
       if (newBid.warranty) formData.append("warranty", newBid.warranty);
       if (newBid.stockStatus) formData.append("stockStatus", newBid.stockStatus);
@@ -116,6 +118,7 @@ export default function BidListCard({
         supplierId: "",
         buyPrice: "",
         sellPrice: "",
+        partQuality: "",
         remarks: "",
         adminRemarks: "",
         deliveryEta: "",
@@ -234,6 +237,20 @@ export default function BidListCard({
                   placeholder="Sell price"
                   className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Part Quality</label>
+                <select
+                  value={newBid.partQuality}
+                  onChange={(e) => handleInputChange("partQuality", e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+                >
+                  <option value="">Select quality</option>
+                  <option value="OEM">OEM</option>
+                  <option value="OES">OES</option>
+                  <option value="Aftermarket">Aftermarket</option>
+                  <option value="Used">Used</option>
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Remarks</label>
