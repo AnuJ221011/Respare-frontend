@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { BrowserRouter, Routes, Route, useLocation, useMatches } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+
 import Navbar from "./components/Navbar";
 import OrdersList from "./pages/OrdersList";
 import OrderDetails from "./pages/OrderDetails";
@@ -20,12 +21,23 @@ function AppContent() {
     }
   });
 
-  const [isNotFound, setIsNotFound] = useState(false);
-
   const location = useLocation();
+  const currentPath = location.pathname;
 
-  // Hide navbar on home + 404 page
-  const hideNavbar = location.pathname === "/" || isNotFound;
+  // List of valid routes (static + regex for dynamic ones)
+  const validRoutes = [
+    /^\/$/,                                // Home
+    /^\/admin\/login$/,                    // Admin Login
+    /^\/orderList$/,                       // Orders list
+    /^\/vendors$/,                         // Vendors Page
+    /^\/order\/[^/]+$/,                    // Order Details (dynamic)
+    /^\/admin\/order\/[^/]+\/bids$/,       // Admin bids route (dynamic)
+  ];
+
+  const isValidRoute = validRoutes.some((route) => route.test(currentPath));
+
+  // Hide navbar on Home page and on invalid route
+  const hideNavbar = !isValidRoute || currentPath === "/";
 
   return (
     <>
@@ -42,15 +54,13 @@ function AppContent() {
           <Route path="/order/:id" element={<OrderDetails />} />
           <Route path="/vendors" element={<VendorsPage />} />
 
-          {/* Not Found */}
-          <Route path="*" element={<NotFound setIsNotFound={setIsNotFound} />} />
+          {/* Handles all wrong routes */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
     </>
   );
 }
-
-
 
 export default function App() {
   return (

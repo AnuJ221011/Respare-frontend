@@ -26,8 +26,32 @@ export default function OrderCard({ order, onOrderUpdated }) {
   const [saving, setSaving] = useState(false);
   const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
+  const normalizedParts = Array.isArray(order.parts)
+    ? order.parts
+    : typeof order.parts === "string"
+    ? (() => {
+        try {
+          const parsed = JSON.parse(order.parts);
+          if (Array.isArray(parsed)) {
+            return parsed;
+          }
+        } catch {
+          return order.parts.split(",").map((item) => ({ name: item.trim() }));
+        }
+        return [];
+      })()
+    : [];
+
+  const partNames = normalizedParts
+    .map((part) =>
+      typeof part === "string" ? part : part?.name || part?.partName || ""
+    )
+    .filter(Boolean)
+    .join(", ");
+
   // Local editable copy
   const [editData, setEditData] = useState(mapOrderToEditable(order));
+  const partsWithFallback = partNames || "—";
 
   useEffect(() => {
     setStatus(order.status || "N/A");
@@ -131,6 +155,8 @@ export default function OrderCard({ order, onOrderUpdated }) {
       setCancelling(false);
     }
   };
+
+  console.log("Rendering OrderCard for order:", order);
 
   return (
     <Card className="relative">
@@ -303,7 +329,7 @@ export default function OrderCard({ order, onOrderUpdated }) {
               <InfoRow label="Remark" value={order.notes || "No Remark"} />
             </div>
             <div>
-              <InfoRow label="Part Name" value={order.parts?.map((p) => p.name).join(", ")} />
+              <InfoRow label="Part Name" value={partsWithFallback} />
               <InfoRow label="Quantity" value={order.quantity || 0} />
               <InfoRow label="Status" value={status || "N/A"} />
             </div>
