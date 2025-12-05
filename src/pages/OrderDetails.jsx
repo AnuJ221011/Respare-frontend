@@ -5,6 +5,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import OrderCard from "../components/OrderDetails/OrderCard";
 import FinalQuotePreview from "../components/OrderDetails/FinalQuotePreview";
 import BidListCard from "../components/OrderDetails/BidListCard";
+import Button from "../components/ui/Button";
 
 const baseUrl = import.meta.env.VITE_BACKEND_URL;
 const BID_ELIGIBLE_STATUSES = new Set(["PENDING", "QUOTED"]);
@@ -32,6 +33,8 @@ export default function OrderDetails() {
   const [errorBids, setErrorBids] = useState(null);
   const [quoteError, setQuoteError] = useState(null);
   const [assigningQc, setAssigningQc] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [activeMobilePanel, setActiveMobilePanel] = useState("order");
 
   const shouldShowBidList = useMemo(
     () => (order ? BID_ELIGIBLE_STATUSES.has(order.status) : false),
@@ -42,6 +45,27 @@ export default function OrderDetails() {
     () => (order ? QUOTE_ELIGIBLE_STATUSES.has(order.status) : false),
     [order]
   );
+
+  const panelOrder = useMemo(() => {
+    const panels = ["order"];
+    if (shouldShowBidList) panels.push("bids");
+    if (shouldShowFinalQuote) panels.push("quote");
+    return panels;
+  }, [shouldShowBidList, shouldShowFinalQuote]);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 767px)");
+    const updateMatch = (event) => setIsMobile(event.matches);
+    updateMatch(mediaQuery);
+    mediaQuery.addEventListener("change", updateMatch);
+    return () => mediaQuery.removeEventListener("change", updateMatch);
+  }, []);
+
+  useEffect(() => {
+    if (!panelOrder.includes(activeMobilePanel)) {
+      setActiveMobilePanel(panelOrder[0] || "order");
+    }
+  }, [panelOrder, activeMobilePanel]);
 
   const fetchOrder = useCallback(async () => {
     if (!id) return;
@@ -343,6 +367,108 @@ export default function OrderDetails() {
     }
   };
 
+  const panelLabels = {
+    order: "Order Details",
+    bids: "Bids",
+    quote: "Final Quote",
+  };
+
+  const renderPanelContent = (panel) => {
+    if (!order) return null;
+    switch (panel) {
+      case "order":
+        return <OrderCard order={order} onOrderUpdated={setOrder} />;
+      case "bids":
+        if (!shouldShowBidList) return null;
+        return (
+          <BidListCard
+            orderId={order.id}
+            bids={bids}
+            canAdminCancel={true}
+            onAddBid={handleAddBid}
+            onEditBid={handleEditBid}
+            onDeleteBid={handleDeleteBid}
+            onAdminCancelBid={handleAdminCancelBid}
+            isLoading={loadingBids}
+            error={errorBids}
+          />
+        );
+      case "quote":
+        if (!shouldShowFinalQuote) return null;
+        return (
+          <FinalQuotePreview
+            order={order}
+            quote={quote}
+            isLoading={loadingQuote}
+            error={quoteError}
+            onAssignQC={handleAssignQC}
+            onOrderCompleted={fetchOrder}
+            onQuoteUpdated={setQuote}
+            onQuoteRefresh={fetchAcceptedQuote}
+            assigningQcLoading={assigningQc}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
+  const renderMobileLayout = () => {
+    const currentIndex = panelOrder.indexOf(activeMobilePanel);
+    const prevPanel = currentIndex > 0 ? panelOrder[currentIndex - 1] : null;
+    const nextPanel =
+      currentIndex >= 0 && currentIndex < panelOrder.length - 1
+        ? panelOrder[currentIndex + 1]
+        : null;
+
+    return (
+      <div className="space-y-4">
+        {renderPanelContent(activeMobilePanel)}
+
+        <div className="flex gap-3">
+          {prevPanel ? (
+            <Button
+              variant="secondary"
+              className="flex-1"
+              onClick={() => setActiveMobilePanel(prevPanel)}
+            >
+              ← {panelLabels[prevPanel]}
+            </Button>
+          ) : (
+            <span className="flex-1" />
+          )}
+          {nextPanel && (
+            <Button
+              variant="primary"
+              className="flex-1"
+              onClick={() => setActiveMobilePanel(nextPanel)}
+            >
+              Next: {panelLabels[nextPanel]}
+            </Button>
+          )}
+        </div>
+
+        {panelOrder.length > 1 && (
+          <div className="flex justify-center gap-2 text-xs text-gray-500">
+            {panelOrder.map((panel) => (
+              <button
+                key={panel}
+                className={`px-3 py-1 rounded-full border text-[11px] ${
+                  activeMobilePanel === panel
+                    ? "bg-black text-white border-black"
+                    : "bg-white text-gray-600 border-gray-300"
+                }`}
+                onClick={() => setActiveMobilePanel(panel)}
+              >
+                {panelLabels[panel]}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   if (loadingOrder) return <Loader message="Loading order details..." />;
   if (errorOrder)
     return (
@@ -370,37 +496,41 @@ export default function OrderDetails() {
         Back to Orders
       </button>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {order && <OrderCard order={order} onOrderUpdated={setOrder} />}
+      {isMobile ? (
+        renderMobileLayout()
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {order && <OrderCard order={order} onOrderUpdated={setOrder} />}
 
-        {shouldShowBidList && (
-          <BidListCard
-            orderId={order.id}
-            bids={bids}
-            canAdminCancel={true}
-            onAddBid={handleAddBid}
-            onEditBid={handleEditBid}
-            onDeleteBid={handleDeleteBid}
-            onAdminCancelBid={handleAdminCancelBid}
-            isLoading={loadingBids}
-            error={errorBids}
-          />
-        )}
+          {shouldShowBidList && (
+            <BidListCard
+              orderId={order.id}
+              bids={bids}
+              canAdminCancel={true}
+              onAddBid={handleAddBid}
+              onEditBid={handleEditBid}
+              onDeleteBid={handleDeleteBid}
+              onAdminCancelBid={handleAdminCancelBid}
+              isLoading={loadingBids}
+              error={errorBids}
+            />
+          )}
 
-        {shouldShowFinalQuote && (
-          <FinalQuotePreview
-            order={order}
-            quote={quote}
-            isLoading={loadingQuote}
-            error={quoteError}
-            onAssignQC={handleAssignQC}
-            onOrderCompleted={fetchOrder}
-            onQuoteUpdated={setQuote}
-            onQuoteRefresh={fetchAcceptedQuote}
-            assigningQcLoading={assigningQc}
-          />
-        )}
-      </div>
+          {shouldShowFinalQuote && (
+            <FinalQuotePreview
+              order={order}
+              quote={quote}
+              isLoading={loadingQuote}
+              error={quoteError}
+              onAssignQC={handleAssignQC}
+              onOrderCompleted={fetchOrder}
+              onQuoteUpdated={setQuote}
+              onQuoteRefresh={fetchAcceptedQuote}
+              assigningQcLoading={assigningQc}
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 }
