@@ -329,7 +329,7 @@ export default function OrderCard({ order, onOrderUpdated }) {
         ) : (
           /* VIEW MODE */
           <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 gap-y-6">
-            <div className="space-y-4">
+            <div className="space-y-4 md:pr-4">
               <InfoRow label="Vehicle Number" value={order.vehicleNumber || "N/A"} />
               <InfoRow
                 label="Make / Model / Year"
@@ -338,7 +338,7 @@ export default function OrderCard({ order, onOrderUpdated }) {
               <InfoRow label="Fuel Type" value={order.fuelType || "Not specified"} />
               <InfoRow label="Remark" value={order.notes || "No Remark"} />
             </div>
-            <div className="space-y-4">
+            <div className="space-y-4 md:pl-4 text-left md:text-right md:flex md:flex-col md:items-end">
               <InfoRow
                 label="Part Name"
                 value={extractPartNames(order.parts).join(", ") || "—"}
