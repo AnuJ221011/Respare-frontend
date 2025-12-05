@@ -13,41 +13,54 @@ export default function OrderRow({ order }) {
   const baseUrl = import.meta.env.VITE_BACKEND_URL;
   const isCancelable = status === "PENDING" || status === "QUOTED";
 
+  console.log("Rendering OrderRow for order:", order);
+
 
   useEffect(() => {
     setStatus(order.status);
   }, [order.status]);
 
   const extractDate = (iso) => {
-    if (!iso) return "";
-    try {
-      const d = new Date(iso);
-      if (isNaN(d)) return iso.split("T")[0] || iso;
-      return d.toLocaleDateString();
-    } catch {
-      return iso.split("T")[0] || iso;
-    }
-  };
+  if (!iso) return "";
+  try {
+    const d = new Date(iso);
+    if (isNaN(d)) return iso.split("T")[0] || iso;
 
-  const extractTime = (utcString) => {
-  if (!utcString) return "";
-  return new Date(utcString).toLocaleTimeString("en-IN", {
-    timeZone: "Asia/Kolkata",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+    return d.toLocaleDateString("en-IN", {
+      timeZone: "Asia/Kolkata",
+    });
+  } catch {
+    return iso.split("T")[0] || iso;
+  }
 };
 
 
-  const displayDate = useMemo(
-    () =>
-      extractDate(
-        order.confirmedAt || order.createdAt || order.updatedAt || order.date
-      ),
-    [order.confirmedAt, order.createdAt, order.updatedAt, order.date]
-  );
+ const extractTime = (iso) => {
+  if (!iso) return "";
+  try {
+    const d = new Date(iso);
 
-  const displayTime = useMemo(
+    return d.toLocaleTimeString("en-IN", {
+      timeZone: "Asia/Kolkata",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+  } catch {
+    return "";
+  }
+};
+
+
+const displayDate = useMemo(
+  () =>
+    extractDate(
+      order.confirmedAt || order.createdAt || order.updatedAt || order.date
+    ),
+  [order.confirmedAt, order.createdAt, order.updatedAt, order.date]
+);
+
+const displayTime = useMemo(
   () =>
     extractTime(
       order.confirmedAt || order.createdAt || order.updatedAt || order.date
@@ -75,6 +88,8 @@ export default function OrderRow({ order }) {
         return stat;
     }
   };
+
+  console.log("Above markOutForDelivery:");
 
   const markOutForDelivery = async () => {
     if (assigningQc) return;

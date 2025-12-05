@@ -1,6 +1,18 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 
 const FUEL_TYPES = ["Diesel", "Petrol", "CNG", "Electric"];
+const PART_GROUPS = [
+  "ACCESSORIES",
+  "BODY_PARTS",
+  "BRAKE",
+  "ELECTRICAL_SYSTEM",
+  "ENGINE",
+  "FUEL_SYSTEM",
+  "STEERING",
+  "SUSPENSION",
+  "TRANSMISSION_GEARBOX",
+  "OTHERS",
+];
 
 export default function AdminOptions({ onOrderCreated }) {
   const [openMenu, setOpenMenu] = useState(false);
@@ -51,6 +63,8 @@ export default function AdminOptions({ onOrderCreated }) {
     vehicleMake: "",
     vehicleModel: "",
     fuelType: "",
+    partGroup: "",
+    acceptUsedParts: false,
     parts: [{ name: "", qty: 1 }],
     quantity: 1,
     notes: "",
@@ -77,6 +91,7 @@ export default function AdminOptions({ onOrderCreated }) {
           }
           const customerData = await response.json();
           setCustomers(customerData);
+          console.log("Fetched customers:", customerData);
         } catch (error) {
           setCustomersError(error.message);
         } finally {
@@ -164,6 +179,8 @@ export default function AdminOptions({ onOrderCreated }) {
         vehicleMake: "",
         vehicleModel: "",
         fuelType: "",
+        partGroup: "",
+        acceptUsedParts: false,
         parts: [{ name: "", qty: 1 }],
         quantity: 1,
         notes: "",
@@ -258,8 +275,11 @@ export default function AdminOptions({ onOrderCreated }) {
   };
 
   const handleOrderInputChange = (e) => {
-    const { name, value } = e.target;
-    setOrderFormData((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setOrderFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value
+    }));
   };
 
   const handlePartChange = (index, field, value) => {
@@ -339,6 +359,13 @@ export default function AdminOptions({ onOrderCreated }) {
       if (orderFormData.fuelType) {
         formDataToSend.append("fuelType", orderFormData.fuelType);
       }
+      if (orderFormData.partGroup) {
+        formDataToSend.append("partGroup", orderFormData.partGroup);
+      }
+      formDataToSend.append(
+        "acceptUsedParts",
+        orderFormData.acceptUsedParts ? "true" : "false"
+      );
       formDataToSend.append("parts", JSON.stringify(orderFormData.parts));
       formDataToSend.append("quantity", orderFormData.quantity.toString());
       formDataToSend.append("notes", orderFormData.notes);
@@ -378,6 +405,8 @@ export default function AdminOptions({ onOrderCreated }) {
       setLoading(false);
     }
   };
+
+  console.log("Customers loaded:", customers);
 
   return (
     <div className="relative">
@@ -778,6 +807,43 @@ export default function AdminOptions({ onOrderCreated }) {
                       </select>
                       <p className="text-xs text-gray-500 mt-1">
                         Supports Diesel, Petrol, CNG, Electric
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Part Group *</label>
+                      <select
+                        required
+                        name="partGroup"
+                        value={orderFormData.partGroup}
+                        onChange={handleOrderInputChange}
+                        className="border p-2 rounded-xl text-sm w-full"
+                      >
+                        <option value="">Select part group</option>
+                        {PART_GROUPS.map((group) => (
+                          <option key={group} value={group}>
+                            {group.split("_").join(" ")}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Required for matching the request with relevant suppliers.
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="flex items-center gap-2 text-sm">
+                        <input
+                          type="checkbox"
+                          name="acceptUsedParts"
+                          checked={orderFormData.acceptUsedParts}
+                          onChange={handleOrderInputChange}
+                          className="accent-black"
+                        />
+                        Customer accepts used parts
+                      </label>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Enable if refurbished/used parts are acceptable for this order.
                       </p>
                     </div>
 
