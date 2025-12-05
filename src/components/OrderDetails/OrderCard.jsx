@@ -6,13 +6,49 @@ import Button from "../ui/Button";
 
 const FUEL_TYPES = ["Diesel", "Petrol", "CNG", "Electric"];
 
+const extractPartNames = (parts) => {
+  if (!parts) return [];
+  if (Array.isArray(parts)) {
+    return parts
+      .map((part) =>
+        typeof part === "string"
+          ? part
+          : part?.name || part?.partName || part?.value || ""
+      )
+      .filter(Boolean);
+  }
+
+  if (typeof parts === "string") {
+    try {
+      const parsed = JSON.parse(parts);
+      if (Array.isArray(parsed)) {
+        return parsed
+          .map((part) =>
+            typeof part === "string"
+              ? part
+              : part?.name || part?.partName || part?.value || ""
+          )
+          .filter(Boolean);
+      }
+    } catch {
+      return parts
+        .split(",")
+        .map((part) => part.trim())
+        .filter(Boolean);
+    }
+    return [parts].filter(Boolean);
+  }
+
+  return [];
+};
+
 const mapOrderToEditable = (source) => ({
   vehicleNumber: source?.vehicleNumber || "",
   vehicleMake: source?.vehicleMake || "",
   vehicleModel: source?.vehicleModel || "",
   vehicleYear: source?.vehicleYear || "",
   fuelType: source?.fuelType || "",
-  partName: (source?.parts || []).map((part) => part.name).join(", ") || "",
+  partName: extractPartNames(source?.parts).join(", "),
   quantity: source?.quantity || 1,
   notes: source?.notes || "",
   images: source?.images || [],
@@ -303,7 +339,10 @@ export default function OrderCard({ order, onOrderUpdated }) {
               <InfoRow label="Remark" value={order.notes || "No Remark"} />
             </div>
             <div>
-              <InfoRow label="Part Name" value={order.parts?.map((p) => p.name).join(", ")} />
+              <InfoRow
+                label="Part Name"
+                value={extractPartNames(order.parts).join(", ") || "—"}
+              />
               <InfoRow label="Quantity" value={order.quantity || 0} />
               <InfoRow label="Status" value={status || "N/A"} />
             </div>
