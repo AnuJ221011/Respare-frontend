@@ -8,6 +8,7 @@ import OrderDetails from "./pages/OrderDetails";
 import LoginForm from "./pages/LoginForm";
 import AdminOrderBidsRoute from "./routes/AdminOrderBidsRoute";
 import HomePage from "./pages/HomePage";
+import VendorsPage from "./pages/VendorsPage";
 
 function AppContent() {
   const [userName, setUserName] = useState(() => {
@@ -36,6 +37,7 @@ function AppContent() {
           <Route path="/admin/order/:id/bids" element={<AdminOrderBidsRoute />} />
           <Route path="/orderList" element={<OrdersList />} />
           <Route path="/order/:id" element={<OrderDetails />} />
+          <Route path="/vendors" element={<VendorsPage />} />
         </Routes>
       </div>
     </>

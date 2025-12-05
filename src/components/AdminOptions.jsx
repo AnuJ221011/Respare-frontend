@@ -1,19 +1,8 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { PART_GROUPS, PART_TYPES } from "../utils/partOptions";
 
 const FUEL_TYPES = ["Diesel", "Petrol", "CNG", "Electric"];
-const PART_GROUPS = [
-  "ACCESSORIES",
-  "BODY_PARTS",
-  "BRAKE",
-  "ELECTRICAL_SYSTEM",
-  "ENGINE",
-  "FUEL_SYSTEM",
-  "STEERING",
-  "SUSPENSION",
-  "TRANSMISSION_GEARBOX",
-  "OTHERS",
-];
 
 export default function AdminOptions({ onOrderCreated }) {
   const navigate = useNavigate();
@@ -39,6 +28,7 @@ export default function AdminOptions({ onOrderCreated }) {
     phone: "",
     email: "",
     password: "",
+    garageName: "",
     city: "",
     state: "",
     role: "CUSTOMER",
@@ -57,7 +47,9 @@ export default function AdminOptions({ onOrderCreated }) {
     city: "",
     state: "",
     pincode: "",
-    rating: ""
+    rating: "",
+    partGroups: [],
+    partTypes: [],
   });
 
   const [orderFormData, setOrderFormData] = useState({
@@ -151,6 +143,7 @@ export default function AdminOptions({ onOrderCreated }) {
         phone: "",
         email: "",
         password: "",
+        garageName: "",
         city: "",
         state: "",
         role: "CUSTOMER",
@@ -168,7 +161,9 @@ export default function AdminOptions({ onOrderCreated }) {
         city: "",
         state: "",
         pincode: "",
-        rating: ""
+        rating: "",
+        partGroups: [],
+        partTypes: [],
       });
       setSuccess(null);
       setError(null);
@@ -276,6 +271,21 @@ export default function AdminOptions({ onOrderCreated }) {
       ...prev,
       [name]: value,
     }));
+  };
+
+  const toggleSupplierMultiSelect = (field, option) => {
+    setSupplierFormData((prev) => {
+      const current = new Set(prev[field] || []);
+      if (current.has(option)) {
+        current.delete(option);
+      } else {
+        current.add(option);
+      }
+      return {
+        ...prev,
+        [field]: Array.from(current),
+      };
+    });
   };
 
   const handleOrderInputChange = (e) => {
@@ -545,6 +555,14 @@ export default function AdminOptions({ onOrderCreated }) {
                     />
                     <input
                       type="text"
+                      name="garageName"
+                      placeholder="Garage Name"
+                      value={customerFormData.garageName}
+                      onChange={handleCustomerInputChange}
+                      className="border p-2 rounded"
+                    />
+                    <input
+                      type="text"
                       name="city"
                       placeholder="City"
                       value={customerFormData.city}
@@ -665,6 +683,56 @@ export default function AdminOptions({ onOrderCreated }) {
                     <p className="text-xs text-gray-500 -mt-2">
                       Supplier phone numbers must be unique.
                     </p>
+                    <div>
+                      <p className="text-sm font-medium mb-2">Part Groups Offered</p>
+                      <div className="flex flex-wrap gap-2">
+                        {PART_GROUPS.map((group) => {
+                          const isSelected = supplierFormData.partGroups.includes(group);
+                          return (
+                            <button
+                              key={group}
+                              type="button"
+                              onClick={() => toggleSupplierMultiSelect("partGroups", group)}
+                              className={`px-3 py-1 rounded-full text-xs border ${
+                                isSelected
+                                  ? "bg-black text-white border-black"
+                                  : "bg-white text-gray-700 border-gray-300"
+                              }`}
+                            >
+                              {group.split("_").join(" ")}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Select all categories the supplier can fulfil.
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium mb-2">Part Types Supported</p>
+                      <div className="flex flex-wrap gap-2">
+                        {PART_TYPES.map((type) => {
+                          const isSelected = supplierFormData.partTypes.includes(type);
+                          return (
+                            <button
+                              key={type}
+                              type="button"
+                              onClick={() => toggleSupplierMultiSelect("partTypes", type)}
+                              className={`px-3 py-1 rounded-full text-xs border ${
+                                isSelected
+                                  ? "bg-black text-white border-black"
+                                  : "bg-white text-gray-700 border-gray-300"
+                              }`}
+                            >
+                              {type.split("_").join(" ")}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        e.g. OEM, aftermarket, used, etc.
+                      </p>
+                    </div>
                   </>
                 )}
                 <button

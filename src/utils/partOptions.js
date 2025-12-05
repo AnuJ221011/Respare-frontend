@@ -1,0 +1,20 @@
+export const PART_GROUPS = [
+  "ACCESSORIES",
+  "BODY_PARTS",
+  "BRAKE",
+  "ELECTRICAL_SYSTEM",
+  "ENGINE",
+  "FUEL_SYSTEM",
+  "STEERING",
+  "SUSPENSION",
+  "TRANSMISSION_GEARBOX",
+  "OTHERS",
+];
+
+export const PART_TYPES = [
+  "AFTERMARKET_NEW",
+  "OEM_NEW",
+  "OES_NEW",
+  "USED",
+  "ALL_TYPES",
+];
