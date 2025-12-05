@@ -292,7 +292,7 @@ export default function OrderCard({ order, onOrderUpdated }) {
           </div>
         ) : (
           /* VIEW MODE */
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-36 sm:gap-6">
             <div>
               <InfoRow label="Vehicle Number" value={order.vehicleNumber || "N/A"} />
               <InfoRow

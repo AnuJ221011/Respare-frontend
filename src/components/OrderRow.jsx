@@ -4,7 +4,7 @@ import Button from "./ui/Button";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 
-export default function OrderRow({ order }) {
+export default function OrderRow({ order, variant = "table" }) {
   const [status, setStatus] = useState(order.status);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [assigningQc, setAssigningQc] = useState(false);
@@ -12,8 +12,42 @@ export default function OrderRow({ order }) {
   const [cancelingOrder, setCancelingOrder] = useState(false);
   const baseUrl = import.meta.env.VITE_BACKEND_URL;
   const isCancelable = status === "PENDING" || status === "QUOTED";
+  const isCard = variant === "card";
 
-  console.log("Rendering OrderRow for order:", order);
+  const normalizedParts = Array.isArray(order.parts)
+    ? order.parts
+    : typeof order.parts === "string"
+    ? (() => {
+        try {
+          const parsed = JSON.parse(order.parts);
+          if (Array.isArray(parsed)) {
+            return parsed;
+          }
+        } catch {
+          return order.parts.split(",").map((item) => ({ name: item.trim() }));
+        }
+        return [];
+      })()
+    : [];
+
+  const partNames = normalizedParts
+    .map((part) =>
+      typeof part === "string" ? part : part?.name || part?.partName || ""
+    )
+    .filter(Boolean)
+    .join(", ");
+
+  const partGroupLabel = order.partGroup || "—";
+  const partsWithFallback = partNames || "—";
+  const partGroupBadge = order.partGroup
+    ? `(${order.partGroup.split("_").join(" ")})`
+    : "";
+  const detailsLink = {
+    pathname: `/order/${order.id}`,
+    search:
+      status !== "PENDING" && status !== "QUOTED" ? "?view=finalQuote" : "",
+  };
+  const bidsLink = `/admin/order/${order.id}/bids`;
 
 
   useEffect(() => {
@@ -21,46 +55,35 @@ export default function OrderRow({ order }) {
   }, [order.status]);
 
   const extractDate = (iso) => {
-  if (!iso) return "";
-  try {
-    const d = new Date(iso);
-    if (isNaN(d)) return iso.split("T")[0] || iso;
+    if (!iso) return "";
+    try {
+      const d = new Date(iso);
+      if (isNaN(d)) return iso.split("T")[0] || iso;
+      return d.toLocaleDateString();
+    } catch {
+      return iso.split("T")[0] || iso;
+    }
+  };
 
-    return d.toLocaleDateString("en-IN", {
-      timeZone: "Asia/Kolkata",
-    });
-  } catch {
-    return iso.split("T")[0] || iso;
-  }
+  const extractTime = (utcString) => {
+  if (!utcString) return "";
+  return new Date(utcString).toLocaleTimeString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 };
 
 
- const extractTime = (iso) => {
-  if (!iso) return "";
-  try {
-    const d = new Date(iso);
+  const displayDate = useMemo(
+    () =>
+      extractDate(
+        order.confirmedAt || order.createdAt || order.updatedAt || order.date
+      ),
+    [order.confirmedAt, order.createdAt, order.updatedAt, order.date]
+  );
 
-    return d.toLocaleTimeString("en-IN", {
-      timeZone: "Asia/Kolkata",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
-  } catch {
-    return "";
-  }
-};
-
-
-const displayDate = useMemo(
-  () =>
-    extractDate(
-      order.confirmedAt || order.createdAt || order.updatedAt || order.date
-    ),
-  [order.confirmedAt, order.createdAt, order.updatedAt, order.date]
-);
-
-const displayTime = useMemo(
+  const displayTime = useMemo(
   () =>
     extractTime(
       order.confirmedAt || order.createdAt || order.updatedAt || order.date
@@ -88,8 +111,6 @@ const displayTime = useMemo(
         return stat;
     }
   };
-
-  console.log("Above markOutForDelivery:");
 
   const markOutForDelivery = async () => {
     if (assigningQc) return;
@@ -168,6 +189,52 @@ const displayTime = useMemo(
     }
   };
 
+  const primaryAction = (() => {
+    if (status === "PENDING") {
+      return (
+        <Link to={bidsLink} className="inline-block">
+          <Button variant="primary" size="sm">
+            View Bids
+          </Button>
+        </Link>
+      );
+    }
+    if (status === "QUOTE_ACCEPTED_BY_CUSTOMER") {
+      return (
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={markOutForDelivery}
+          isLoading={assigningQc}
+          disableWhileLoading
+        >
+          Assign QC
+        </Button>
+      );
+    }
+    if (status === "CONFIRMED") {
+      return (
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={markDelivered}
+          isLoading={markingDelivered}
+          disableWhileLoading
+        >
+          Mark Delivered
+        </Button>
+      );
+    }
+    if (statusButtonMap[status]) {
+      return (
+        <Button variant="primary" size="sm">
+          {statusButtonMap[status]}
+        </Button>
+      );
+    }
+    return null;
+  })();
+
   // Handler to cancel order
   const handleCancelOrder = async () => {
     if (cancelingOrder) return;
@@ -205,17 +272,126 @@ const displayTime = useMemo(
     }
   };
 
-  console.log("Order", order, "Status:", status);
+  const renderCancelMenu = () => {
+    if (!showCancelConfirm || status === "CANCELLED") return null;
+    return (
+      <div
+        className={`absolute ${
+          isCard ? "top-10 right-4" : "top-8 right-0"
+        } border border-gray-200 shadow-md rounded bg-white p-2 z-10 w-28 text-center`}
+      >
+        <Button
+          type="button"
+          variant="danger"
+          size="sm"
+          onClick={handleCancelOrder}
+          disabled={!isCancelable || cancelingOrder}
+          isLoading={cancelingOrder}
+          className="w-full text-xs"
+        >
+          Cancel Order
+        </Button>
+
+        <Link to={bidsLink} className="inline-block">
+          <button className="mt-2 text-blue-600 font-semibold cursor-pointer hover:underline text-xs">
+            View All Bids
+          </button>
+        </Link>
+
+        <Link to={detailsLink}>
+          <button className="mt-2 text-blue-600 font-semibold cursor-pointer hover:underline text-xs">
+            View Details
+          </button>
+        </Link>
+      </div>
+    );
+  };
+
+  if (isCard) {
+    return (
+      <div className="relative bg-white rounded-2xl shadow border border-gray-200 p-4 flex flex-col gap-3">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <Link
+              to={detailsLink}
+              className={`text-sm font-semibold text-blue-600 hover:underline ${
+                status === "CANCELLED" ? "line-through text-red-500" : ""
+              }`}
+            >
+              #{order.id}
+            </Link>
+            <p className="text-xs text-gray-500">
+              {displayDate || "—"}
+              {displayTime ? ` • ${displayTime}` : ""}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {order.partGroup && (
+              <span className="text-[11px] uppercase tracking-wide bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full">
+                {order.partGroup.split("_").join(" ")}
+              </span>
+            )}
+            <button
+              onClick={() => setShowCancelConfirm((show) => !show)}
+              aria-label="Toggle cancel order options"
+              className="p-1 rounded-full hover:bg-gray-100 focus:outline-none"
+            >
+              <svg
+                className={`w-5 h-5 transition-transform ${
+                  showCancelConfirm ? "rotate-180" : "rotate-0"
+                }`}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div className="space-y-1 text-sm text-gray-800">
+          <p className="font-semibold">{order.customerName}</p>
+          <p className="text-xs text-gray-600">
+            {order.vehicleMake}, {order.vehicleModel} • {order.vehicleNumber}
+          </p>
+          <p className="text-xs text-gray-700">
+            Parts: {partsWithFallback}
+          </p>
+        </div>
+
+
+        <div className="flex flex-wrap gap-2 text-xs text-gray-500">
+          {order.fuelType && <span>{order.fuelType}</span>}
+          {order.quantity && <span>Qty: {order.quantity}</span>}
+          {order.customerCity && <span>{order.customerCity}</span>}
+        </div>
+
+        <div className="flex justify-between gap-3">
+          <span className="text-sm font-medium">{getDisplayStatus(status)}</span>
+          <div className="flex-shrink-0">{primaryAction}</div>
+        </div>
+        
+        <div className="flex gap-4 text-xs text-blue-600">
+          <Link to={detailsLink} className="font-semibold hover:underline">
+            View Details
+          </Link>
+          {/* <Link to={bidsLink} className="font-semibold hover:underline">
+            View Bids
+          </Link> */}
+        </div>
+
+        {renderCancelMenu()}
+      </div>
+    );
+  }
 
   return (
     <tr className="border-b last:border-none align-top relative">
-      {/* Order ID with special link when IN_PROGRESS */}
       <td className="py-5 px-4 text-sm">
         <Link
-          to={{
-            pathname: `/order/${order.id}`,
-            search: status !== "PENDING" && status !== "QUOTED" ? "?view=finalQuote" : "",
-          }}
+          to={detailsLink}
           className={`text-blue-600 font-semibold cursor-pointer hover:underline ${
             status === "CANCELLED" ? "line-through text-red-500" : ""
           }`}
@@ -224,22 +400,25 @@ const displayTime = useMemo(
         </Link>
       </td>
 
-      {/* Vehicle Number */}
       <td className="py-5 px-4 text-sm font-medium">{order.vehicleNumber}</td>
 
-      {/* Make Model */}
-      <td className="py-5 px-4 text-sm whitespace-pre-line">{order.vehicleMake},<br />{order.vehicleModel}</td>
+      <td className="py-5 px-4 text-sm whitespace-pre-line">
+        {order.vehicleMake},<br />
+        {order.vehicleModel}
+      </td>
 
-      {/* Fuel Type */}
       <td className="py-5 px-4 text-sm">{order.fuelType || "—"}</td>
 
-      {/* Part Name */}
-      <td className="py-5 px-4 text-sm">{order.parts?.map(p => p.name).join(", ")}</td>
+      <td className="py-5 px-4 text-sm">
+        {partsWithFallback}{" "}
+      </td>
 
-      {/* Customer Name */}
+      <td className="py-5 px-4 text-sm uppercase tracking-wide text-gray-700">
+        {partGroupLabel}
+      </td>
+
       <td className="py-5 px-4 text-sm">{order.customerName}</td>
 
-      {/* Date + Overdue */}
       <td className="py-5 px-4 text-sm">
         <div className="flex flex-col">
           <div>{displayDate || "—"}</div>
@@ -250,45 +429,14 @@ const displayTime = useMemo(
         </div>
       </td>
 
-      {/* Status + Button */}
       <td className="py-5 px-4 text-sm relative">
-        <div className="flex flex-col gap-2 w-40">
-          <span className="font-medium leading-tight">{getDisplayStatus(status)}</span>
-
-          {status === "PENDING" ? (
-            <Link to={`/admin/order/${order.id}/bids`} className="inline-block">
-              <Button variant="primary" size="sm">
-                View Bids
-              </Button>
-            </Link>
-          ) : status === "QUOTE_ACCEPTED_BY_CUSTOMER" ? (
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={markOutForDelivery}
-              isLoading={assigningQc}
-              disableWhileLoading
-            >
-              Assign QC
-            </Button>
-          ) : status === "CONFIRMED" ? (
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={markDelivered}
-              isLoading={markingDelivered}
-              disableWhileLoading
-            >
-              Mark Delivered
-            </Button>
-          ) : ( 
-            statusButtonMap[status] && (
-              <Button children={statusButtonMap[status]} variant="primary" size="sm" />
-            )
-          )}
+        <div className="flex flex-col gap-2 w-44">
+          <span className="font-medium leading-tight">
+            {getDisplayStatus(status)}
+          </span>
+          {primaryAction}
         </div>
 
-        {/* Arrow icon for cancel */}
         <button
           onClick={() => setShowCancelConfirm((show) => !show)}
           aria-label="Toggle cancel order options"
@@ -308,76 +456,7 @@ const displayTime = useMemo(
           </svg>
         </button>
 
-        {showCancelConfirm && status !== "CANCELLED" && (
-          <div className="absolute top-8 right-0 border border-gray-200 shadow-md rounded bg-white p-2 z-10 w-32 text-center">
-            <Button
-              type="button"
-              variant="danger"
-              size="sm"
-              onClick={handleCancelOrder}
-              disabled={!isCancelable || cancelingOrder}
-              isLoading={cancelingOrder}
-              className="w-full text-xs"
-            >
-              Cancel Order
-            </Button>
-
-
-            <Link to={`/admin/order/${order.id}/bids`} className="inline-block">
-              <button className="mt-2 text-blue-600 font-semibold cursor-pointer hover:underline">
-                View All Bids
-              </button>
-            </Link>
-
-            <Link
-              to={{
-                pathname: `/order/${order.id}`,
-                search: status !== "PENDING" && status !== "QUOTED" ? "?view=finalQuote" : "",
-              }}
-              
-            >
-              <button className="mt-2 text-blue-600 font-semibold cursor-pointer hover:underline">
-                View Details
-              </button>
-            </Link>
-
-          </div>
-        )}
-
-
-        {/* Delete arrow button */}
-        {/* <button
-          onClick={() => setShowDeleteConfirm((show) => !show)}
-          aria-label="Toggle order delete options"
-          title="Toggle order delete options"
-          className="absolute top-2 right-1 p-1 rounded-full hover:bg-gray-200 focus:outline-none"
-        >
-          {/* Arrow icon (simple chevron down/up toggle) 
-          <svg
-            className={`w-5 h-5 transition-transform ${
-              showDeleteConfirm ? "rotate-180" : "rotate-0"
-            }`}
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-          </svg>
-        </button> 
-
-        {showDeleteConfirm && (
-          <div className="absolute top-8 right-0 border border-white rounded shadow-md p-2 z-10 w-28 text-center cursor-pointer bg-red-400">
-            <button
-              type="button"
-              onClick={handleDeleteOrder}
-              className="text-white font-semibold cursor-pointer"
-            >
-              Delete Order
-            </button>
-          </div>
-        )}
-        */}
+        {renderCancelMenu()}
       </td>
     </tr>
   );

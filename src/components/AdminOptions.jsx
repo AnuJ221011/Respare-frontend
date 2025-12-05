@@ -90,8 +90,10 @@ export default function AdminOptions({ onOrderCreated }) {
             throw new Error("Failed to fetch customers");
           }
           const customerData = await response.json();
-          setCustomers(customerData);
-          console.log("Fetched customers:", customerData);
+          const normalizedCustomers = Array.isArray(customerData)
+            ? customerData
+            : customerData?.customers || [];
+          setCustomers(normalizedCustomers);
         } catch (error) {
           setCustomersError(error.message);
         } finally {
@@ -405,8 +407,6 @@ export default function AdminOptions({ onOrderCreated }) {
       setLoading(false);
     }
   };
-
-  console.log("Customers loaded:", customers);
 
   return (
     <div className="relative">

@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import AdminOrderBidsPage from "../pages/AdminOrderBidsPage";
 import Loader from "../components/ui/Loader";
+import { Link } from "react-router-dom";
 
 export default function AdminOrderBidsRoute() {
   const { id } = useParams();
@@ -51,8 +52,19 @@ export default function AdminOrderBidsRoute() {
 
   if (loading) return <Loader message="Loading order and bids..." />;
   if (errorMsg) return <div className="p-4 text-red-600">{errorMsg}</div>;
-  if (!order || !Array.isArray(order.quotes))
-    return <div className="p-4 text-gray-700">No order or bids found.</div>;
+  if (!order || !Array.isArray(order.quotes)) {
+  return (
+    <div className="p-4 text-gray-700">
+      <div className="text-xs text-gray-500 mb-6 flex items-center">
+        <Link to="/orderList" className="mr-2 underline font-medium">
+          ← Back to All Order
+        </Link>
+      </div>
+
+      No order or bids found.
+    </div>
+  );
+}
 
   // Map backend data to AdminOrderBidsPage props
   return (

@@ -101,46 +101,62 @@ export default function OrderDetails() {
   );
 
   const fetchBids = useCallback(
-    async (currentStatus) => {
-      if (!id || !shouldShowBidList) return;
-      try {
-        setLoadingBids(true);
-        setErrorBids(null);
-        const token = localStorage.getItem("token");
-        if (!token) throw new Error("Not authenticated");
-        const res = await fetch(`${baseUrl}/api/quotes/order/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) {
-          const errText = await res.text();
-          throw new Error(errText || "Failed to fetch bids");
-        }
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          setBids(data);
-          if (currentStatus === "PENDING" && data.length > 0) {
-            await patchOrderStatus("QUOTED");
-          }
-          const hasAccepted = data.some((q) =>
-            ACCEPTED_QUOTE_STATUSES.has(q.status)
-          );
-          if (hasAccepted && currentStatus !== "QUOTE_ACCEPTED_BY_CUSTOMER") {
-            await patchOrderStatus("QUOTE_ACCEPTED_BY_CUSTOMER");
-          }
-        } else {
-          setBids([]);
-          setErrorBids(data?.message || "No bids available");
-        }
-      } catch (err) {
-        console.error("Error fetching bids:", err);
-        setErrorBids(err.message || "Failed to load bids");
-        setBids([]);
-      } finally {
-        setLoadingBids(false);
+  async (currentStatus) => {
+    if (!id || !shouldShowBidList) return;
+
+    try {
+      setLoadingBids(true);
+      setErrorBids(null);
+
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("Not authenticated");
+
+      const res = await fetch(`${baseUrl}/api/quotes/order/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(errText || "Failed to fetch bids");
       }
-    },
-    [id, patchOrderStatus, shouldShowBidList]
-  );
+
+      const data = await res.json();
+      console.log("Fetched bids:", data);
+
+      const quotesArray = data?.quotes;
+
+      if (Array.isArray(quotesArray)) {
+        setBids(quotesArray);
+
+        // Auto update order status
+        if (currentStatus === "PENDING" && quotesArray.length > 0) {
+          await patchOrderStatus("QUOTED");
+        }
+
+        const hasAccepted = quotesArray.some((q) =>
+          ACCEPTED_QUOTE_STATUSES.has(q.status)
+        );
+
+        if (hasAccepted && currentStatus !== "QUOTE_ACCEPTED_BY_CUSTOMER") {
+          await patchOrderStatus("QUOTE_ACCEPTED_BY_CUSTOMER");
+        }
+      } else {
+        setBids([]);
+        setErrorBids(data?.message || "No bids available");
+      }
+    } catch (err) {
+      console.error("Error fetching bids:", err);
+      setErrorBids(err.message || "Failed to load bids");
+      setBids([]);
+    } finally {
+      setLoadingBids(false);
+    }
+  },
+  [id, patchOrderStatus, shouldShowBidList]
+);
+
+
+  console.log("Bids data in OrderDetails:", bids);
 
   const fetchAcceptedQuote = useCallback(async () => {
     if (!id || !shouldShowFinalQuote) {

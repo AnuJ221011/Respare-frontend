@@ -115,7 +115,7 @@ export default function BidItem({
           </svg>
         </button>
         {menuOpen && (
-          <div className="absolute right-0 mt-2 w-32 text-center bg-white border border-gray-200 rounded shadow z-20">
+          <div className="absolute right-0 mt-2 w-24 text-sm text-center bg-white border border-gray-200 rounded shadow z-20">
             <button
               onClick={openEditModal}
               className="mt-1 text-blue-600 font-semibold cursor-pointer hover:underline"
@@ -134,7 +134,7 @@ export default function BidItem({
                   setCancelModal(true);
                   setMenuOpen(false);
                 }}
-                className="mt-2 mb-1 text-blue-600 font-semibold cursor-pointer hover:underline text-orange-700"
+                className="mt-2 mb-1 font-semibold cursor-pointer hover:underline text-red-600"
               >
                 Cancel Bid
               </button>
@@ -163,7 +163,7 @@ export default function BidItem({
 
       {/* Remarks */}
       <div className="text-xs text-gray-600 text-center mb-1">
-        Part Quality: {bid.partQuality || "—"}
+        Part Type: {bid.partType || "—"}
       </div>
       <div className="text-xs text-gray-600 text-center mb-2">{bid.remarks || "—"}</div>
 
@@ -230,7 +230,7 @@ export default function BidItem({
               <div><strong>Phone:</strong> {bid.supplier?.phone || "—"}</div>
               <div><strong>City:</strong> {bid.supplier?.city || "—"}, {bid.supplier?.state || "—"}</div>
               <div><strong>Warranty:</strong> {bid.warranty || "—"}</div>
-              <div><strong>Part Quality:</strong> {bid.partQuality || "—"}</div>
+              <div><strong>Part Type:</strong> {bid.partType || "—"}</div>
               <div><strong>Remarks:</strong> {bid.remarks || "—"}</div>
               <div><strong>Admin Remarks:</strong> {bid.adminRemarks || "—"}</div>
               <div><strong>Rating:</strong> {bid.supplier?.rating ?? "—"}</div>
