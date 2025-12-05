@@ -343,6 +343,15 @@ export default function OrderCard({ order, onOrderUpdated }) {
                 label="Part Name"
                 value={extractPartNames(order.parts).join(", ") || "—"}
               />
+              <InfoRow label="Part Number" value={order.partNumber || "—"} />
+              <InfoRow
+                label="Part Group"
+                value={
+                  order.partGroup
+                    ? order.partGroup.split("_").join(" ")
+                    : "—"
+                }
+              />
               <InfoRow label="Quantity" value={order.quantity || 0} />
               <InfoRow label="Status" value={status || "N/A"} />
             </div>
