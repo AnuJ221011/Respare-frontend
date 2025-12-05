@@ -6,13 +6,49 @@ import Button from "../ui/Button";
 
 const FUEL_TYPES = ["Diesel", "Petrol", "CNG", "Electric"];
 
+const extractPartNames = (parts) => {
+  if (!parts) return [];
+  if (Array.isArray(parts)) {
+    return parts
+      .map((part) =>
+        typeof part === "string"
+          ? part
+          : part?.name || part?.partName || part?.value || ""
+      )
+      .filter(Boolean);
+  }
+
+  if (typeof parts === "string") {
+    try {
+      const parsed = JSON.parse(parts);
+      if (Array.isArray(parsed)) {
+        return parsed
+          .map((part) =>
+            typeof part === "string"
+              ? part
+              : part?.name || part?.partName || part?.value || ""
+          )
+          .filter(Boolean);
+      }
+    } catch {
+      return parts
+        .split(",")
+        .map((part) => part.trim())
+        .filter(Boolean);
+    }
+    return [parts].filter(Boolean);
+  }
+
+  return [];
+};
+
 const mapOrderToEditable = (source) => ({
   vehicleNumber: source?.vehicleNumber || "",
   vehicleMake: source?.vehicleMake || "",
   vehicleModel: source?.vehicleModel || "",
   vehicleYear: source?.vehicleYear || "",
   fuelType: source?.fuelType || "",
-  partName: (source?.parts || []).map((part) => part.name).join(", ") || "",
+  partName: extractPartNames(source?.parts).join(", "),
   quantity: source?.quantity || 1,
   notes: source?.notes || "",
   images: source?.images || [],
@@ -26,32 +62,8 @@ export default function OrderCard({ order, onOrderUpdated }) {
   const [saving, setSaving] = useState(false);
   const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
-  const normalizedParts = Array.isArray(order.parts)
-    ? order.parts
-    : typeof order.parts === "string"
-    ? (() => {
-        try {
-          const parsed = JSON.parse(order.parts);
-          if (Array.isArray(parsed)) {
-            return parsed;
-          }
-        } catch {
-          return order.parts.split(",").map((item) => ({ name: item.trim() }));
-        }
-        return [];
-      })()
-    : [];
-
-  const partNames = normalizedParts
-    .map((part) =>
-      typeof part === "string" ? part : part?.name || part?.partName || ""
-    )
-    .filter(Boolean)
-    .join(", ");
-
   // Local editable copy
   const [editData, setEditData] = useState(mapOrderToEditable(order));
-  const partsWithFallback = partNames || "—";
 
   useEffect(() => {
     setStatus(order.status || "N/A");
@@ -155,8 +167,6 @@ export default function OrderCard({ order, onOrderUpdated }) {
       setCancelling(false);
     }
   };
-
-  console.log("Rendering OrderCard for order:", order);
 
   return (
     <Card className="relative">
@@ -318,7 +328,7 @@ export default function OrderCard({ order, onOrderUpdated }) {
           </div>
         ) : (
           /* VIEW MODE */
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-36 sm:gap-6">
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <InfoRow label="Vehicle Number" value={order.vehicleNumber || "N/A"} />
               <InfoRow
@@ -327,12 +337,23 @@ export default function OrderCard({ order, onOrderUpdated }) {
               />
               <InfoRow label="Fuel Type" value={order.fuelType || "Not specified"} />
               <InfoRow label="Remark" value={order.notes || "No Remark"} />
-            </div>
-            <div>
-              <InfoRow label="Part Name" value={partsWithFallback} />
-              <InfoRow label="Quantity" value={order.quantity || 0} />
               <InfoRow label="Status" value={status || "N/A"} />
             </div>
+            <div>
+              <InfoRow
+                label="Part Name"
+                value={extractPartNames(order.parts).join(", ") || "—"}
+              />
+              <InfoRow label="Part Number" value={order.partNumber || "—"} />
+              <InfoRow
+                label="Part Group"
+                value={
+                  order.partGroup
+                    ? order.partGroup.split("_").join(" ")
+                    : "—"
+                }
+              />
+              <InfoRow label="Quantity" value={order.quantity || 0} />
             <div className="col-span-2">
               <div className="py-2 text-sm text-gray-500">Part Images</div>
               <div className="flex gap-2 mt-2">
@@ -349,6 +370,7 @@ export default function OrderCard({ order, onOrderUpdated }) {
                   <p className="text-xs text-gray-400">No part images</p>
                 )}
               </div>
+            </div>
             </div>
             <div className="mt-6 col-span-2 flex justify-center w-full">
               <Button

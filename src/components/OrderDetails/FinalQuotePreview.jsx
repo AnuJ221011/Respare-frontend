@@ -113,7 +113,8 @@ export default function FinalQuotePreview({
     }
   };
 
-  console.log("Vendor info:", quote?.supplier);
+  console.log("Fina Quote:", quote);
+  console.log("Final Quote order:", order);
 
   if (isLoading)
     return (
@@ -136,7 +137,7 @@ export default function FinalQuotePreview({
       </Card>
     );
 
-  const vendor = quote.supplier;
+  const vendor = quote.Supplier;
 
   let actionSection = null;
   if (order.status === "QUOTE_ACCEPTED_BY_CUSTOMER" && !editMode) {
@@ -209,7 +210,7 @@ export default function FinalQuotePreview({
         <div className="text-sm text-gray-500 font-medium mb-1">Vendor Information</div>
         <div className="flex text-sm py-1 mb-6">
           <div className="text-gray-800">
-            {vendor?.name}
+            {vendor?.firmName}
             &nbsp;&nbsp;|&nbsp;&nbsp;
           </div>
           <div className="text-gray-800">
@@ -217,7 +218,7 @@ export default function FinalQuotePreview({
             &nbsp;&nbsp;|&nbsp;&nbsp;
           </div>
           <div className="text-gray-800">
-            {vendor?.address}, {vendor?.city}, {vendor?.state} - {vendor?.pincode}
+            {vendor?.city} ({vendor?.state})
           </div>
         </div>
 
@@ -254,10 +255,10 @@ export default function FinalQuotePreview({
             )}
           </div>
           <div>
-            <div className="text-xs text-gray-500">Part Quality</div>
+            <div className="text-xs text-gray-500">Part Type</div>
             {editMode ? (
               <select
-                value={form.partQuality}
+                value={form.partType}
                 onChange={(e) =>
                   setForm((prev) => ({ ...prev, partQuality: e.target.value }))
                 }
@@ -282,22 +283,37 @@ export default function FinalQuotePreview({
           <div className="text-xs text-gray-500">Tentative Delivery Date</div>
           <div className="text-gray-800 font-medium text-sm">{quote.deliveryEta || "N/A"}</div>
         </div>
+        
+        <div className="flex gap-10">
+  {/* Remarks Section */}
+  <div className="w-1/2">
+    <div className="text-gray-500 text-sm mb-1">Remarks</div>
 
-        <div className="text-gray-500 w-40 mb-1">Remarks</div>
-        <div className="mb-6">
-          <div className="text-xs text-gray-500">Remarks</div>
-          {editMode ? (
-            <textarea
-              value={form.remarks}
-              onChange={(e) =>
-                setForm((prev) => ({ ...prev, remarks: e.target.value }))
-              }
-              className="w-full border rounded p-1 text-sm"
-            />
-          ) : (
-            <div className="text-gray-800 text-sm">{quote.remarks}</div>
-          )}
-        </div>
+    {editMode ? (
+      <textarea
+        value={form.remarks}
+        onChange={(e) =>
+          setForm((prev) => ({ ...prev, remarks: e.target.value }))
+        }
+        className="w-full border rounded p-2 text-xs"
+      />
+    ) : (
+      <div className="text-gray-800 text-xs mb-2">
+        {quote.remarks || "N/A"}
+      </div>
+    )}
+  </div>
+
+  {/* Admin Remarks Section */}
+  <div className="w-1/2">
+    <div className="text-gray-500 text-sm mb-1">Admin Remarks</div>
+
+    <div className="text-gray-800 text-xs">
+      {quote.adminRemarks || "N/A"}
+    </div>
+  </div>
+</div>
+
 
         <div className="text-gray-500 w-40 mb-1">Images</div>
         <div className="mb-6">

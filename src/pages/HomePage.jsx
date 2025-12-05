@@ -49,7 +49,7 @@ export default function HomePage() {
           <a href="/" className="flex items-center">
             <div className="w-24 h-16 sm:w-28 sm:h-18 rounded-2xl overflow-hidden flex items-center justify-center bg-white/80">
   <img
-    src="https://res.cloudinary.com/dlnyzjn5e/image/upload/v1764753429/ChatGPT_Image_Nov_10_2025_08_57_35_PM_2_1_lldkzn.svg"
+    src="https://res.cloudinary.com/dlnyzjn5e/image/upload/v1764922764/ReSpare-new_y8qmde.svg"
     alt="ReSpare Logo"
     className="w-full h-full object-contain"
   />

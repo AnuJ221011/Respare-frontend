@@ -52,7 +52,7 @@ export default function AdminOrderBidsRoute() {
 
   if (loading) return <Loader message="Loading order and bids..." />;
   if (errorMsg) return <div className="p-4 text-red-600">{errorMsg}</div>;
-  if (!order || !Array.isArray(order.quotes)) {
+  if (!order || !Array.isArray(order.Quote)) {
   return (
     <div className="p-4 text-gray-700">
       <div className="text-xs text-gray-500 mb-6 flex items-center">
@@ -75,7 +75,7 @@ export default function AdminOrderBidsRoute() {
         quantity: order.quantity ?? 1,
         status: order.status,
       }}
-      bids={order.quotes.map(q => ({
+      bids={order.Quote.map(q => ({
         id: q.id,
         vendorName: q.supplier?.firmName || q.supplier?.name || "Unknown Vendor",
         dateTime: new Date(q.createdAt).toLocaleString(),

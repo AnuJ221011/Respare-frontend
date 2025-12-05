@@ -213,7 +213,7 @@ export default function AdminOrderBidsPage() {
     { label: "Current Status", value: order.status || "—" },
   ];
 
-  const quotes = Array.isArray(order.quotes) ? order.quotes : [];
+  const quotes = Array.isArray(order.Quote) ? order.Quote : [];
 
   const renderCancelDialog = (quote, isCard = false) => {
     if (cancelId !== quote.id) return null;
