@@ -193,9 +193,9 @@ export default function OrderCard({ order, onOrderUpdated }) {
 
       {/* Main content */}
       <div className={`${open ? "block" : "hidden"} md:block mt-3 md:mt-0`}>
-        <div className="flex justify-between items-start">
+        <div className="flex justify-between items-start gap-3 flex-wrap">
           <h2
-            className={`text-lg font-semibold text-gray-800 ${
+            className={`text-lg font-semibold text-gray-800 break-words ${
               order.status === "CANCELLED" ? "line-through text-red-500" : ""
             }`}
           >
@@ -204,13 +204,13 @@ export default function OrderCard({ order, onOrderUpdated }) {
           {!isEditing && (
             <button
               onClick={() => setIsEditing(true)}
-              className="hidden md:inline text-gray-500 p-1 hover:bg-gray-100 rounded cursor-pointer"
+              className="text-gray-500 p-1 hover:bg-gray-100 rounded cursor-pointer flex items-center gap-1 text-sm"
               aria-label="Edit order"
               title="Edit order"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 inline-block"
+                className="h-4 w-4"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -228,7 +228,7 @@ export default function OrderCard({ order, onOrderUpdated }) {
         </div>
         {/* EDIT MODE */}
         {isEditing ? (
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 gap-y-6">
             <div>
               <label className="text-sm font-medium">Vehicle Number</label>
               <input
@@ -328,8 +328,8 @@ export default function OrderCard({ order, onOrderUpdated }) {
           </div>
         ) : (
           /* VIEW MODE */
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 gap-y-6">
+            <div className="space-y-4">
               <InfoRow label="Vehicle Number" value={order.vehicleNumber || "N/A"} />
               <InfoRow
                 label="Make / Model / Year"
@@ -338,7 +338,7 @@ export default function OrderCard({ order, onOrderUpdated }) {
               <InfoRow label="Fuel Type" value={order.fuelType || "Not specified"} />
               <InfoRow label="Remark" value={order.notes || "No Remark"} />
             </div>
-            <div>
+            <div className="space-y-4">
               <InfoRow
                 label="Part Name"
                 value={extractPartNames(order.parts).join(", ") || "—"}
