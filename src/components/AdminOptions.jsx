@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 
 const FUEL_TYPES = ["Diesel", "Petrol", "CNG", "Electric"];
 const PART_GROUPS = [
@@ -15,6 +16,7 @@ const PART_GROUPS = [
 ];
 
 export default function AdminOptions({ onOrderCreated }) {
+  const navigate = useNavigate();
   const [openMenu, setOpenMenu] = useState(false);
   const [openAddUser, setOpenAddUser] = useState(false);
   const [openCreateOrder, setOpenCreateOrder] = useState(false);
@@ -442,6 +444,16 @@ export default function AdminOptions({ onOrderCreated }) {
             }}
           >
             Create Order
+          </button>
+
+          <button
+            className="w-full p-2 text-left rounded hover:bg-gray-100"
+            onClick={() => {
+              navigate("/vendors");
+              setOpenMenu(false);
+            }}
+          >
+            View Vendors
           </button>
         </div>
       )}
