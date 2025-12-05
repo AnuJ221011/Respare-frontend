@@ -19,18 +19,19 @@ const mapOrderToEditable = (source) => ({
 });
 
 export default function OrderCard({ order, onOrderUpdated }) {
+  const currentOrder = order || {};
   const [open, setOpen] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [status, setStatus] = useState(order.status || "N/A");
+  const [status, setStatus] = useState(currentOrder.status || "N/A");
   const [cancelling, setCancelling] = useState(false);
   const [saving, setSaving] = useState(false);
   const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
   // Local editable copy
-  const [editData, setEditData] = useState(mapOrderToEditable(order));
+  const [editData, setEditData] = useState(mapOrderToEditable(currentOrder));
 
   useEffect(() => {
-    setStatus(order.status || "N/A");
+    setStatus(order?.status || "N/A");
     if (!isEditing) {
       setEditData(mapOrderToEditable(order));
     }
@@ -63,7 +64,7 @@ export default function OrderCard({ order, onOrderUpdated }) {
       if (!payload.fuelType) {
         delete payload.fuelType;
       }
-      const res = await fetch(`${baseUrl}/api/orders/${order.id}`, {
+      const res = await fetch(`${baseUrl}/api/orders/${currentOrder.id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -108,7 +109,9 @@ export default function OrderCard({ order, onOrderUpdated }) {
         setCancelling(false);
         return;
       }
-      const res = await fetch(`${baseUrl}/api/orders/${order.id}/cancel-admin`, {
+      const res = await fetch(
+        `${baseUrl}/api/orders/${currentOrder.id}/cancel-admin`,
+        {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -143,12 +146,16 @@ export default function OrderCard({ order, onOrderUpdated }) {
         <div>
           <div
             className={`text-sm font-semibold text-gray-800 ${
-              order.status === "CANCELLED" ? "line-through text-red-500" : ""
+              currentOrder.status === "CANCELLED"
+                ? "line-through text-red-500"
+                : ""
             }`}
           >
-            Order ID #{order.id}
+            Order ID #{currentOrder.id}
           </div>
-          <div className="text-xs text-gray-500">{order.vehicleNumber}</div>
+          <div className="text-xs text-gray-500">
+            {currentOrder.vehicleNumber}
+          </div>
         </div>
         <Button size="sm" variant="primary">
           {status}
@@ -160,10 +167,12 @@ export default function OrderCard({ order, onOrderUpdated }) {
         <div className="flex justify-between items-start">
           <h2
             className={`text-lg font-semibold text-gray-800 ${
-              order.status === "CANCELLED" ? "line-through text-red-500" : ""
+              currentOrder.status === "CANCELLED"
+                ? "line-through text-red-500"
+                : ""
             }`}
           >
-            Order ID #{order.id}
+            Order ID #{currentOrder.id}
           </h2>
           {!isEditing && (
             <button
@@ -294,24 +303,38 @@ export default function OrderCard({ order, onOrderUpdated }) {
           /* VIEW MODE */
           <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-36 sm:gap-6">
             <div>
-              <InfoRow label="Vehicle Number" value={order.vehicleNumber || "N/A"} />
+              <InfoRow
+                label="Vehicle Number"
+                value={currentOrder.vehicleNumber || "N/A"}
+              />
               <InfoRow
                 label="Make / Model / Year"
-                value={`${order.vehicleMake || ""}, ${order.vehicleModel || ""}, ${order.vehicleYear || ""}`.trim() || "N/A"}
+                value={`${currentOrder.vehicleMake || ""}, ${
+                  currentOrder.vehicleModel || ""
+                }, ${currentOrder.vehicleYear || ""}`.trim() || "N/A"}
               />
-              <InfoRow label="Fuel Type" value={order.fuelType || "Not specified"} />
-              <InfoRow label="Remark" value={order.notes || "No Remark"} />
+              <InfoRow
+                label="Fuel Type"
+                value={currentOrder.fuelType || "Not specified"}
+              />
+              <InfoRow
+                label="Remark"
+                value={currentOrder.notes || "No Remark"}
+              />
             </div>
             <div>
-              <InfoRow label="Part Name" value={order.parts?.map((p) => p.name).join(", ")} />
-              <InfoRow label="Quantity" value={order.quantity || 0} />
+              <InfoRow
+                label="Part Name"
+                value={currentOrder.parts?.map((p) => p.name).join(", ")}
+              />
+              <InfoRow label="Quantity" value={currentOrder.quantity || 0} />
               <InfoRow label="Status" value={status || "N/A"} />
             </div>
             <div className="col-span-2">
               <div className="py-2 text-sm text-gray-500">Part Images</div>
               <div className="flex gap-2 mt-2">
-                {(order.images || []).length > 0 ? (
-                  order.images.map((src, idx) => (
+                {(currentOrder.images || []).length > 0 ? (
+                  currentOrder.images.map((src, idx) => (
                     <img
                       key={idx}
                       src={src}
