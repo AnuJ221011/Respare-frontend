@@ -58,13 +58,19 @@ export default function OrderList() {
   if (error) return <div className="text-red-600">Error: {error}</div>;
 
   return (
-    <div className="p-4 py-2">
-      <div className="flex justify-between">
-        <h2 className="text-xl font-semibold mb-6">Orders</h2>
-        <AdminOptions onOrderCreated={handleOrderCreated}/>
-
+    <div className="px-4 py-4 sm:px-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+        <div>
+          <h2 className="text-2xl font-semibold">Orders</h2>
+          <p className="text-sm text-gray-500">
+            Track every request, part group, and status update in one place.
+          </p>
+        </div>
+        <div className="self-start sm:self-auto">
+          <AdminOptions onOrderCreated={handleOrderCreated} />
+        </div>
       </div>
-      
+
       <OrderListTable orders={orders} />
     </div>
   );
