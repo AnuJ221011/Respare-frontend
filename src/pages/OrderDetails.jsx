@@ -140,12 +140,17 @@ export default function OrderDetails() {
           throw new Error(errText || "Failed to fetch bids");
         }
         const data = await res.json();
-        if (Array.isArray(data)) {
-          setBids(data);
-          if (currentStatus === "PENDING" && data.length > 0) {
+        const quotesArray = Array.isArray(data?.quotes)
+          ? data.quotes
+          : Array.isArray(data)
+          ? data
+          : [];
+        if (quotesArray.length) {
+          setBids(quotesArray);
+          if (currentStatus === "PENDING" && quotesArray.length > 0) {
             await patchOrderStatus("QUOTED");
           }
-          const hasAccepted = data.some((q) =>
+          const hasAccepted = quotesArray.some((q) =>
             ACCEPTED_QUOTE_STATUSES.has(q.status)
           );
           if (hasAccepted && currentStatus !== "QUOTE_ACCEPTED_BY_CUSTOMER") {
