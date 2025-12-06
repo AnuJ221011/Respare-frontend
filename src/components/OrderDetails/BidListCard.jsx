@@ -20,12 +20,14 @@ export default function BidListCard({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hiddenBids, setHiddenBids] = useState(new Set());
 
+  console.log("BidListCard - bids:", bids);
+
   // Form state for new bid creation
   const [newBid, setNewBid] = useState({
     supplierId: supplierId || "",
     buyPrice: "",
     sellPrice: "",
-    partQuality: "",
+    partType: "",
     remarks: "",
     adminRemarks: "",
     deliveryEta: "",
@@ -102,7 +104,7 @@ export default function BidListCard({
       }
       if (newBid.remarks) formData.append("remarks", newBid.remarks);
       if (newBid.adminRemarks) formData.append("adminRemarks", newBid.adminRemarks);
-      if (newBid.partQuality) formData.append("partQuality", newBid.partQuality);
+      if (newBid.partType) formData.append("partType", newBid.partType);
       if (newBid.deliveryEta) formData.append("deliveryEta", newBid.deliveryEta);
       if (newBid.warranty) formData.append("warranty", newBid.warranty);
       if (newBid.stockStatus) formData.append("stockStatus", newBid.stockStatus);
@@ -118,7 +120,7 @@ export default function BidListCard({
         supplierId: "",
         buyPrice: "",
         sellPrice: "",
-        partQuality: "",
+        partType: "",
         remarks: "",
         adminRemarks: "",
         deliveryEta: "",
@@ -245,7 +247,7 @@ export default function BidListCard({
                   onChange={(e) => handleInputChange("partQuality", e.target.value)}
                   className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
                 >
-                  <option value="">Select quality</option>
+                  <option value="">Select Type</option>
                   <option value="OEM">OEM</option>
                   <option value="OES">OES</option>
                   <option value="Aftermarket">Aftermarket</option>

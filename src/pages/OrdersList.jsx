@@ -18,22 +18,13 @@ export default function OrderList() {
       },
     });
     if (!response.ok) {
-      let message = "Failed to fetch orders";
-      try {
-        const errBody = await response.json();
-        message = errBody?.message || message;
-      } catch {
-        const errText = await response.text();
-        if (errText) message = errText;
-      }
-      throw new Error(message);
+      const errText = await response.text();
+      throw new Error(errText || "Failed to fetch orders");
     }
-    const payload = await response.json();
-    if (Array.isArray(payload)) {
-      return { orders: payload, total: payload.length };
-    }
-    return payload || { orders: [], total: 0 };
+    return response.json();
   }, [baseUrl]);
+
+  
 
   useEffect(() => {
     let ignore = false;
@@ -43,7 +34,7 @@ export default function OrderList() {
         setError(null);
         const data = await fetchOrders();
         if (!ignore) {
-          setOrders(Array.isArray(data) ? data : data?.orders || []);
+          setOrders(data.orders);
         }
       } catch (err) {
         if (!ignore) {
@@ -60,6 +51,8 @@ export default function OrderList() {
       ignore = true;
     };
   }, [fetchOrders]);
+
+  console.log("Orders fetched:", orders);
 
   const handleOrderCreated = (newOrder) => {
     setOrders((prev) => [newOrder, ...prev]);

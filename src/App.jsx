@@ -1,43 +1,52 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  useLocation,
+  matchRoutes,
+} from "react-router-dom";
 import Navbar from "./components/Navbar";
 import OrdersList from "./pages/OrdersList";
 import OrderDetails from "./pages/OrderDetails";
 import LoginForm from "./pages/LoginForm";
 import AdminOrderBidsRoute from "./routes/AdminOrderBidsRoute";
 import HomePage from "./pages/HomePage";
-import NotFound from "./pages/NotFound";
 import VendorsPage from "./pages/VendorPage";
+import NotFound from "./pages/NotFound";
 
 function AppContent() {
   const [userName, setUserName] = useState(() => {
     try {
       return localStorage.getItem("userName") || null;
-    } catch {
+    } catch (e) {
       return null;
     }
   });
 
   const location = useLocation();
-  const currentPath = location.pathname;
+  const routeConfig = useMemo(
+    () => [
+      { path: "/", element: <HomePage />, hideNavbar: true },
+      { path: "/admin/login", element: <LoginForm setUserName={setUserName} /> },
+      { path: "/admin/order/:id/bids", element: <AdminOrderBidsRoute /> },
+      { path: "/orderList", element: <OrdersList /> },
+      { path: "/order/:id", element: <OrderDetails /> },
+      { path: "/vendors", element: <VendorsPage /> },
+      { path: "*", element: <NotFound />, hideNavbar: true },
+    ],
+    [setUserName]
+  );
 
-  // List of valid routes (static + regex for dynamic ones)
-  const validRoutes = [
-    /^\/$/,                                // Home
-    /^\/admin\/login$/,                    // Admin Login
-    /^\/orderList$/,                       // Orders list
-    /^\/vendors$/,                         // Vendors Page
-    /^\/order\/[^/]+$/,                    // Order Details (dynamic)
-    /^\/admin\/order\/[^/]+\/bids$/,       // Admin bids route (dynamic)
-  ];
+  const matchedRoutes = matchRoutes(routeConfig, location);
+  const activeRoute =
+    matchedRoutes && matchedRoutes.length > 0
+      ? matchedRoutes[matchedRoutes.length - 1].route
+      : null;
 
-  const isValidRoute = validRoutes.some((route) => route.test(currentPath));
-
-  // Hide navbar on Home page and on invalid route
-  const hideNavbar = !isValidRoute || currentPath === "/";
+  const hideNavbar = activeRoute?.hideNavbar ?? false;
 
   return (
     <>
@@ -47,15 +56,9 @@ function AppContent() {
 
       <div className={hideNavbar ? "" : "p-6"}>
         <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/admin/login" element={<LoginForm setUserName={setUserName} />} />
-          <Route path="/admin/order/:id/bids" element={<AdminOrderBidsRoute />} />
-          <Route path="/orderList" element={<OrdersList />} />
-          <Route path="/order/:id" element={<OrderDetails />} />
-          <Route path="/vendors" element={<VendorsPage />} />
-
-          {/* Handles all wrong routes */}
-          <Route path="*" element={<NotFound />} />
+          {routeConfig.map(({ path, element }) => (
+            <Route key={path} path={path} element={element} />
+          ))}
         </Routes>
       </div>
     </>

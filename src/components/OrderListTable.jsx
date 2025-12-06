@@ -1,6 +1,7 @@
 import OrderRow from "./OrderRow";
 
 export default function OrderListTable({ orders = [] }) {
+  console.log("Order Length:", orders.length);
   if (!orders.length) {
     return (
       <div className="bg-white rounded-xl shadow border border-gray-200 w-full p-6 text-center text-sm text-gray-500">
@@ -8,6 +9,8 @@ export default function OrderListTable({ orders = [] }) {
       </div>
     );
   }
+
+  console.log("Rendering OrderListTable with orders:", orders);
 
   return (
     <div className="space-y-4">

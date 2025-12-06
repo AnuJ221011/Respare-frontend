@@ -2,28 +2,65 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import Card from "../ui/Card";
 import VendorItem from "./VendorItem";
+import { PART_GROUPS, PART_TYPES } from "../../utils/partOptions";
+
+const EMPTY_VENDOR_FORM = {
+  name: "",
+  phone: "",
+  city: "",
+  address: "",
+  pincode: "",
+  gstNumber: "",
+  partGroup: "",
+  rating: "",
+  partGroups: [],
+  partTypes: [],
+};
+
+const normalizeMultiValue = (value) => {
+  if (!value) return [];
+  if (Array.isArray(value)) {
+    return value.filter(Boolean);
+  }
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) {
+        return parsed.filter(Boolean);
+      }
+    } catch {
+      return value
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+    }
+    return value ? [value] : [];
+  }
+  return [];
+};
+
+const mapVendorToForm = (vendor) => ({
+  ...EMPTY_VENDOR_FORM,
+  ...(vendor || {}),
+  partGroups: normalizeMultiValue(vendor?.partGroups || vendor?.partGroup),
+  partTypes: normalizeMultiValue(vendor?.partTypes || vendor?.partType),
+});
 
 export default function VendorListCard({
   vendors = [],
-  actionLabel = "View Details", // Button label for main action
-  onAction, // (vendorId) => parent handles vendor view modal
+  actionLabel = "View Details",
+  onAction,
   onAddVendor,
+  onUpdateVendor,
   onReload,
   onDelete,
 }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hiddenVendors, setHiddenVendors] = useState(new Set());
-  const [newVendor, setNewVendor] = useState({
-    name: "",
-    phone: "",
-    city: "",
-    address: "",
-    pincode: "",
-    gstNumber: "",
-    partGroup: "",
-    rating: "",
-  });
+  const [modalMode, setModalMode] = useState("create");
+  const [editingVendorId, setEditingVendorId] = useState(null);
+  const [newVendor, setNewVendor] = useState({ ...EMPTY_VENDOR_FORM });
 
   // Filter vendors based on search term and hidden status
   const filteredVendors = vendors.filter((vendor) => {
@@ -31,11 +68,21 @@ export default function VendorListCard({
     const searchLower = searchTerm.toLowerCase();
     const vendorName = (vendor.name || "").toLowerCase();
     const vendorPhone = (vendor.phone || "").toString();
-    const vendorPartGroup = (vendor.partGroup || "").toLowerCase();
+    const vendorPartGroup = normalizeMultiValue(
+      vendor.partGroups || vendor.partGroup
+    )
+      .join(" ")
+      .toLowerCase();
+    const vendorPartTypes = normalizeMultiValue(
+      vendor.partTypes || vendor.partType
+    )
+      .join(" ")
+      .toLowerCase();
     return (
       vendorName.includes(searchLower) ||
       vendorPhone.includes(searchTerm) ||
-      vendorPartGroup.includes(searchLower)
+      vendorPartGroup.includes(searchLower) ||
+      vendorPartTypes.includes(searchLower)
     );
   });
 
@@ -48,6 +95,35 @@ export default function VendorListCard({
       ...prev,
       [field]: value,
     }));
+  };
+
+  const toggleMultiSelect = (field, option) => {
+    setNewVendor((prev) => {
+      const current = new Set(prev[field] || []);
+      if (current.has(option)) {
+        current.delete(option);
+      } else {
+        current.add(option);
+      }
+      return {
+        ...prev,
+        [field]: Array.from(current),
+      };
+    });
+  };
+
+  const openCreateModal = () => {
+    setModalMode("create");
+    setEditingVendorId(null);
+    setNewVendor({ ...EMPTY_VENDOR_FORM });
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (vendor) => {
+    setModalMode("edit");
+    setEditingVendorId(vendor.id);
+    setNewVendor(mapVendorToForm(vendor));
+    setIsModalOpen(true);
   };
 
   const handleAddVendorSubmit = async () => {
@@ -64,50 +140,46 @@ export default function VendorListCard({
       gstNumber: newVendor.gstNumber.trim() || null,
       partGroup: newVendor.partGroup.trim() || null,
       rating: newVendor.rating ? parseFloat(newVendor.rating) : null,
+      partGroups: Array.isArray(newVendor.partGroups)
+        ? newVendor.partGroups
+        : [],
+      partTypes: Array.isArray(newVendor.partTypes) ? newVendor.partTypes : [],
     };
-    if (onAddVendor) {
-      try {
+    try {
+      if (modalMode === "edit") {
+        if (!editingVendorId || !onUpdateVendor) {
+          throw new Error("Update handler not available");
+        }
+        await onUpdateVendor(editingVendorId, vendorData);
+        toast.success("Vendor updated successfully!");
+      } else if (onAddVendor) {
         await onAddVendor(vendorData);
         toast.success("Vendor added successfully!");
-        if (onReload && typeof onReload === "function") {
-          try {
-            await onReload();
-          } catch (reloadErr) {
-            console.warn("Vendor reload callback failed:", reloadErr);
-          }
-        }
-      } catch (error) {
-        console.error("Error adding vendor:", error);
-        toast.error(`Error: ${error.message}`);
-        return;
       }
+      if (onReload && typeof onReload === "function") {
+        try {
+          await onReload();
+        } catch (reloadErr) {
+          console.warn("Vendor reload callback failed:", reloadErr);
+        }
+      }
+    } catch (error) {
+      console.error("Error saving vendor:", error);
+      toast.error(`Error: ${error.message}`);
+      return;
     }
     // Reset form and close modal
-    setNewVendor({
-      name: "",
-      phone: "",
-      city: "",
-      address: "",
-      pincode: "",
-      gstNumber: "",
-      partGroup: "",
-      rating: "",
-    });
+    setNewVendor({ ...EMPTY_VENDOR_FORM });
+    setEditingVendorId(null);
+    setModalMode("create");
     setIsModalOpen(false);
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
-    setNewVendor({
-      name: "",
-      phone: "",
-      city: "",
-      address: "",
-      pincode: "",
-      gstNumber: "",
-      partGroup: "",
-      rating: "",
-    });
+    setNewVendor({ ...EMPTY_VENDOR_FORM });
+    setEditingVendorId(null);
+    setModalMode("create");
   };
 
   const handleKeyPress = (e) => {
@@ -122,7 +194,7 @@ export default function VendorListCard({
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-semibold">Vendor List</h3>
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={openCreateModal}
           className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm font-medium cursor-pointer"
         >
           + Add Vendor
@@ -148,6 +220,7 @@ export default function VendorListCard({
               actionLabel={actionLabel}
               onAction={() => onAction && onAction(vendor.id)}
               onHide={() => handleHideVendor(vendor.id)}
+              onEdit={() => openEditModal(vendor)}
               onDelete={onDelete}
             />
           ))
@@ -170,7 +243,9 @@ export default function VendorListCard({
           <div className="bg-white rounded-lg w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col">
             {/* Modal Header */}
             <div className="flex justify-between items-center p-4 border-b flex-shrink-0">
-              <h3 className="text-lg font-semibold">Add New Vendor</h3>
+              <h3 className="text-lg font-semibold">
+                {modalMode === "edit" ? "Edit Vendor" : "Add New Vendor"}
+              </h3>
               <button
                 onClick={closeModal}
                 className="text-gray-500 hover:text-gray-700 text-xl font-bold cursor-pointer"
@@ -293,6 +368,60 @@ export default function VendorListCard({
                   className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
                 />
               </div>
+              <div>
+                <p className="block text-sm font-medium text-gray-700 mb-2">
+                  Part Groups Offered
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {PART_GROUPS.map((group) => {
+                    const isSelected = newVendor.partGroups.includes(group);
+                    return (
+                      <button
+                        key={group}
+                        type="button"
+                        onClick={() => toggleMultiSelect("partGroups", group)}
+                        className={`px-3 py-1 rounded-full text-xs border ${
+                          isSelected
+                            ? "bg-black text-white border-black"
+                            : "bg-white text-gray-700 border-gray-300"
+                        }`}
+                      >
+                        {group.split("_").join(" ")}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Choose all categories this vendor can support.
+                </p>
+              </div>
+              <div>
+                <p className="block text-sm font-medium text-gray-700 mb-2">
+                  Part Types Supported
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {PART_TYPES.map((type) => {
+                    const isSelected = newVendor.partTypes.includes(type);
+                    return (
+                      <button
+                        key={type}
+                        type="button"
+                        onClick={() => toggleMultiSelect("partTypes", type)}
+                        className={`px-3 py-1 rounded-full text-xs border ${
+                          isSelected
+                            ? "bg-black text-white border-black"
+                            : "bg-white text-gray-700 border-gray-300"
+                        }`}
+                      >
+                        {type.split("_").join(" ")}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  e.g. OEM, aftermarket, used, etc.
+                </p>
+              </div>
               <div className="text-xs text-gray-500 pt-2">* Required fields</div>
             </div>
             {/* Modal Footer */}
@@ -307,7 +436,7 @@ export default function VendorListCard({
                 onClick={handleAddVendorSubmit}
                 className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium cursor-pointer"
               >
-                Add Vendor
+                {modalMode === "edit" ? "Save Changes" : "Add Vendor"}
               </button>
             </div>
           </div>

@@ -1,14 +1,15 @@
-import { useState, useEffect } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import Loader from "../components/ui/Loader";
 import Button from "../components/ui/Button";
 
-export default function AdminOrderBidsPage() {
-  const { id: orderId } = useParams();
-  const [order, setOrder] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [errorMsg, setErrorMsg] = useState("");
+export default function AdminOrderBidsPage({
+  order,
+  loading = false,
+  errorMsg = "",
+  onRefresh,
+}) {
   const [editId, setEditId] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [cancelId, setCancelId] = useState(null);
@@ -68,36 +69,6 @@ export default function AdminOrderBidsPage() {
     return [];
   };
 
-  // Fetch order and quotes on mount, after update/cancel
-  useEffect(() => {
-    async function fetchOrder() {
-      setLoading(true);
-      setErrorMsg("");
-      try {
-        const res = await fetch(`${BASE_URL}/api/orders/${orderId}`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!res.ok) {
-          const errorText = await res.text();
-          setErrorMsg(`Server Error (${res.status}): ${errorText.slice(0, 100)}`);
-          setOrder(null);
-        } else {
-          const data = await res.json();
-          setOrder(data);
-        }
-      } catch (err) {
-        setErrorMsg("Network error. Please try again.");
-        setOrder(null);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchOrder();
-  }, [orderId, BASE_URL, token]);
-
   // Handle edit form change
   const handleEditChange = (e) => {
     const { name, value } = e.target;
@@ -124,14 +95,7 @@ export default function AdminOrderBidsPage() {
       toast.success("Quote updated.");
       setEditId(null);
       setEditForm({});
-      // Refresh order/quotes
-      const refRes = await fetch(`${BASE_URL}/api/orders/${orderId}`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setOrder(await refRes.json());
+      await onRefresh?.();
     } catch (err) {
       toast.error(err.message || "Error updating quote");
     } finally {
@@ -157,14 +121,7 @@ export default function AdminOrderBidsPage() {
       toast.success("Quote cancelled.");
       setCancelId(null);
       setCancelRemarks("");
-      // Refresh quotes
-      const refRes = await fetch(`${BASE_URL}/api/orders/${orderId}`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setOrder(await refRes.json());
+      await onRefresh?.();
     } catch (err) {
       toast.error(err.message || "Error cancelling quote");
     } finally {
@@ -175,16 +132,17 @@ export default function AdminOrderBidsPage() {
   if (loading) return <Loader message="Loading order and bids..." />;
   if (errorMsg)
     return <div className="text-red-600">{errorMsg}</div>;
-  if (!order) return (
-    <>
-      <div className="text-xs text-gray-500 mb-6 flex items-center">
-        <Link to="/orderList" className="mr-2 underline font-medium">
-          ← Back to All Order
-        </Link>
-      </div>
-      <div className="text-gray-700">No order found.</div>
-    </>
-  );
+  if (!order)
+    return (
+      <>
+        <div className="text-xs text-gray-500 mb-6 flex items-center">
+          <Link to="/orderList" className="mr-2 underline font-medium">
+            ← Back to All Order
+          </Link>
+        </div>
+        <div className="text-gray-700">No order found.</div>
+      </>
+    );
 
   const detailsLink = {
     pathname: `/order/${order.id}`,
@@ -213,7 +171,11 @@ export default function AdminOrderBidsPage() {
     { label: "Current Status", value: order.status || "—" },
   ];
 
-  const quotes = Array.isArray(order.Quote) ? order.Quote : [];
+  const quotes = Array.isArray(order.quotes)
+    ? order.quotes
+    : Array.isArray(order.Quote)
+    ? order.Quote
+    : [];
 
   const renderCancelDialog = (quote, isCard = false) => {
     if (cancelId !== quote.id) return null;
@@ -304,7 +266,7 @@ export default function AdminOrderBidsPage() {
         {!isEditing ? (
           <>
             <button
-              className={`bg-gray-500 text-white font-semibold cursor-pointer rounded ${
+              className={`bg-yellow-500 text-white font-semibold rounded ${
                 isCard ? "px-4 py-2 text-sm" : "px-3 py-1 text-xs"
               }`}
               onClick={() => {
@@ -319,7 +281,7 @@ export default function AdminOrderBidsPage() {
               Edit
             </button>
             <button
-              className={`bg-red-600 text-white font-semibold cursor-pointer rounded ${
+              className={`bg-red-600 text-white font-semibold rounded ${
                 isCard ? "px-4 py-2 text-sm" : "px-3 py-1 text-xs"
               }`}
               onClick={() => setCancelId(quote.id)}
@@ -404,55 +366,23 @@ export default function AdminOrderBidsPage() {
           </Link>
         </div>
 
-      {/* Order Summary */}
-        <div className="mb-4 bg-gray-50 px-5 py-3 rounded-lg border">
-
-          <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:gap-6">
-
-            {/* Requested Part */}
-            <div className="text-gray-700 text-sm">
-              <span className="font-semibold">Requested Part:</span>{" "}
-              {Array.isArray(order.parts)
-                ? order.parts.map((p, i) => (
-                    <span key={i} className="font-small text-xs">
-                      {p.name || p}
-                      {i < order.parts.length - 1 ? ", " : ""}
-                    </span>
-                  ))
-                : "-"}
-            </div>
-
-            {/* Quantity */}
-            <div className="text-gray-700 text-sm">
-              <span className="font-semibold">Quantity:</span>{" "}
-              <span className="font-small text-xs">{order.quantity}</span>
-            </div>
-
-            {/* Vehicle */}
-            <div className="text-gray-700 text-sm">
-              <span className="font-semibold">Vehicle:</span>{" "}
-              <span className="font-small text-xs">
-                {order.vehicleMake} {order.vehicleModel} ({order.vehicleNumber})
-              </span>
-            </div>
-
-            {/* Fuel Type */}
-            <div className="text-gray-700 text-sm">
-              <span className="font-semibold">Fuel Type:</span>{" "}
-              <span className="font-small text-xs">
-                {order.fuelType || "Not specified"}
-              </span>
-            </div>
-
-            {/* Current Status */}
-            <div className="text-gray-700 text-sm">
-              <span className="font-semibold">Current Status:</span>{" "}
-              <span className="font-small text-xs">{order.status}</span>
-            </div>
-
+        <div className="bg-white rounded-2xl shadow border border-gray-200 p-5">
+          <h3 className="text-base font-semibold text-gray-900 mb-4">
+            Order Summary
+          </h3>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {orderSummaryItems.map((item) => (
+              <div key={item.label} className="text-sm">
+                <p className="text-gray-500 text-xs uppercase tracking-wide">
+                  {item.label}
+                </p>
+                <p className="font-semibold text-gray-900 mt-1">
+                  {item.value || "—"}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
-
 
         <section className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">

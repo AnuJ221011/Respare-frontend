@@ -14,6 +14,8 @@ export default function OrderRow({ order, variant = "table" }) {
   const isCancelable = status === "PENDING" || status === "QUOTED";
   const isCard = variant === "card";
 
+  console.log("OrderRow received order:", order);
+
   const normalizedParts = Array.isArray(order.parts)
     ? order.parts
     : typeof order.parts === "string"
@@ -278,7 +280,7 @@ export default function OrderRow({ order, variant = "table" }) {
       <div
         className={`absolute ${
           isCard ? "top-10 right-4" : "top-8 right-0"
-        } border border-gray-200 shadow-md rounded bg-white p-2 z-10 w-28 text-center`}
+        } border border-gray-200 shadow-md rounded bg-white p-2 z-10 w-32 text-center`}
       >
         <Button
           type="button"
@@ -306,6 +308,8 @@ export default function OrderRow({ order, variant = "table" }) {
       </div>
     );
   };
+
+  console.log("Rendering OrderRow for order id:", order.id, "with status:", status);
 
   if (isCard) {
     return (
@@ -354,13 +358,17 @@ export default function OrderRow({ order, variant = "table" }) {
         <div className="space-y-1 text-sm text-gray-800">
           <p className="font-semibold">{order.customerName}</p>
           <p className="text-xs text-gray-600">
-            {order.vehicleMake}, {order.vehicleModel} • {order.vehicleNumber}
+            {order.vehicleMake}, {order.vehicleModel}, {order.vehicleYear} • {order.vehicleNumber}
           </p>
           <p className="text-xs text-gray-700">
-            Parts: {partsWithFallback}
+            Parts: {partsWithFallback} {partGroupBadge}
           </p>
         </div>
 
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-sm font-medium">{getDisplayStatus(status)}</span>
+          <div className="flex-shrink-0">{primaryAction}</div>
+        </div>
 
         <div className="flex flex-wrap gap-2 text-xs text-gray-500">
           {order.fuelType && <span>{order.fuelType}</span>}
@@ -368,18 +376,13 @@ export default function OrderRow({ order, variant = "table" }) {
           {order.customerCity && <span>{order.customerCity}</span>}
         </div>
 
-        <div className="flex justify-between gap-3">
-          <span className="text-sm font-medium">{getDisplayStatus(status)}</span>
-          <div className="flex-shrink-0">{primaryAction}</div>
-        </div>
-        
         <div className="flex gap-4 text-xs text-blue-600">
           <Link to={detailsLink} className="font-semibold hover:underline">
             View Details
           </Link>
-          {/* <Link to={bidsLink} className="font-semibold hover:underline">
+          <Link to={bidsLink} className="font-semibold hover:underline">
             View Bids
-          </Link> */}
+          </Link>
         </div>
 
         {renderCancelMenu()}
@@ -404,13 +407,14 @@ export default function OrderRow({ order, variant = "table" }) {
 
       <td className="py-5 px-4 text-sm whitespace-pre-line">
         {order.vehicleMake},<br />
-        {order.vehicleModel}
+        {order.vehicleModel},
+        {order.vehicleYear}
       </td>
 
       <td className="py-5 px-4 text-sm">{order.fuelType || "—"}</td>
 
       <td className="py-5 px-4 text-sm">
-        {partsWithFallback}{" "}
+        {partsWithFallback}
       </td>
 
       <td className="py-5 px-4 text-sm uppercase tracking-wide text-gray-700">

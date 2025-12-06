@@ -31,7 +31,7 @@ export default function NavBar({ userName, setUserName }) {
               {/* Logo */}
               <div className="w-16 h-10 sm:w-20 sm:h-10 rounded-xl overflow-hidden">
                 <img
-                  src="https://res.cloudinary.com/dlnyzjn5e/image/upload/v1764753429/ChatGPT_Image_Nov_10_2025_08_57_35_PM_2_1_lldkzn.svg"
+                  src="https://res.cloudinary.com/dlnyzjn5e/image/upload/v1764922764/ReSpare-new_y8qmde.svg"
                   alt="ReSpare Logo"
                   className="w-full h-full object-contain"
                 />
