@@ -1,14 +1,15 @@
-import { useState, useEffect } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import Loader from "../components/ui/Loader";
 import Button from "../components/ui/Button";
 
-export default function AdminOrderBidsPage() {
-  const { id: orderId } = useParams();
-  const [order, setOrder] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [errorMsg, setErrorMsg] = useState("");
+export default function AdminOrderBidsPage({
+  order,
+  loading = false,
+  errorMsg = "",
+  onRefresh,
+}) {
   const [editId, setEditId] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [cancelId, setCancelId] = useState(null);
@@ -68,36 +69,6 @@ export default function AdminOrderBidsPage() {
     return [];
   };
 
-  // Fetch order and quotes on mount, after update/cancel
-  useEffect(() => {
-    async function fetchOrder() {
-      setLoading(true);
-      setErrorMsg("");
-      try {
-        const res = await fetch(`${BASE_URL}/api/orders/${orderId}`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!res.ok) {
-          const errorText = await res.text();
-          setErrorMsg(`Server Error (${res.status}): ${errorText.slice(0, 100)}`);
-          setOrder(null);
-        } else {
-          const data = await res.json();
-          setOrder(data);
-        }
-      } catch (err) {
-        setErrorMsg("Network error. Please try again.");
-        setOrder(null);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchOrder();
-  }, [orderId, BASE_URL, token]);
-
   // Handle edit form change
   const handleEditChange = (e) => {
     const { name, value } = e.target;
@@ -124,14 +95,7 @@ export default function AdminOrderBidsPage() {
       toast.success("Quote updated.");
       setEditId(null);
       setEditForm({});
-      // Refresh order/quotes
-      const refRes = await fetch(`${BASE_URL}/api/orders/${orderId}`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setOrder(await refRes.json());
+      await onRefresh?.();
     } catch (err) {
       toast.error(err.message || "Error updating quote");
     } finally {
@@ -157,14 +121,7 @@ export default function AdminOrderBidsPage() {
       toast.success("Quote cancelled.");
       setCancelId(null);
       setCancelRemarks("");
-      // Refresh quotes
-      const refRes = await fetch(`${BASE_URL}/api/orders/${orderId}`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setOrder(await refRes.json());
+      await onRefresh?.();
     } catch (err) {
       toast.error(err.message || "Error cancelling quote");
     } finally {
@@ -175,16 +132,17 @@ export default function AdminOrderBidsPage() {
   if (loading) return <Loader message="Loading order and bids..." />;
   if (errorMsg)
     return <div className="text-red-600">{errorMsg}</div>;
-  if (!order) return (
-    <>
-      <div className="text-xs text-gray-500 mb-6 flex items-center">
-        <Link to="/orderList" className="mr-2 underline font-medium">
-          ← Back to All Order
-        </Link>
-      </div>
-      <div className="text-gray-700">No order found.</div>
-    </>
-  );
+  if (!order)
+    return (
+      <>
+        <div className="text-xs text-gray-500 mb-6 flex items-center">
+          <Link to="/orderList" className="mr-2 underline font-medium">
+            ← Back to All Order
+          </Link>
+        </div>
+        <div className="text-gray-700">No order found.</div>
+      </>
+    );
 
   const detailsLink = {
     pathname: `/order/${order.id}`,
@@ -213,7 +171,11 @@ export default function AdminOrderBidsPage() {
     { label: "Current Status", value: order.status || "—" },
   ];
 
-  const quotes = Array.isArray(order.quotes) ? order.quotes : [];
+  const quotes = Array.isArray(order.quotes)
+    ? order.quotes
+    : Array.isArray(order.Quote)
+    ? order.Quote
+    : [];
 
   const renderCancelDialog = (quote, isCard = false) => {
     if (cancelId !== quote.id) return null;
